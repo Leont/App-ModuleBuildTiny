@@ -1,0 +1,10 @@
+This archive contains the distribution App-ModuleBuildTiny,
+version 0.001:
+
+  A standalone authoring tool for Module::Build::Tiny
+
+This software is copyright (c) 2011 by Leon Timmermans.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+

@@ -1,0 +1,9 @@
+_build_params
+\.git/
+\.gitignore
+.*\.swp
+.*~
+.*\.tar\.gz
+MYMETA\..*
+MANIFEST.bak
+^Build$

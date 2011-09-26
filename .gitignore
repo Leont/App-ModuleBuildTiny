@@ -1,8 +1,12 @@
-.build
+_build
 *META.yml
+*META.json
 *~
 *.bak
 *.swp
 *.tdy
 *.tar.gz
 App-ModuleBuildTiny-*
+/Build
+_build_params
+/blib/
