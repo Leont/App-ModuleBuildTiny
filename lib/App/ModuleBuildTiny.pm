@@ -16,6 +16,7 @@ use File::Find::Rule qw/find/;
 use File::Path qw/mkpath/;
 use File::Slurp qw/write_file/;
 use Getopt::Long qw/GetOptionsFromArray/;
+use Hash::Diff qw/left_diff/;
 use Module::Metadata;
 use Perl::PrereqScanner;
 use Version::Requirements;
@@ -93,7 +94,7 @@ sub modulebuildtiny {
 				license => 'perl_5',
 				prereqs => {
 					runtime => { requires => $requires->as_string_hash },
-					build => { requires => $build_requires->as_string_hash },
+					build => { requires => left_diff($build_requires->as_string_hash, $requires->as_string_hash) },
 					configure => { requires => { 'Module::Build::Tiny' => 0.008 } },
 				},
 				release_status => 'stable',
