@@ -12,16 +12,15 @@ use Archive::Tar;
 use Carp qw/croak/;
 use CPAN::Meta;
 use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
-use File::Find::Rule qw/find/;
 use File::Path qw/mkpath rmtree/;
-use File::Slurp qw/write_file/;
 use Getopt::Long qw/GetOptionsFromArray/;
 use Module::CPANfile;
 use Module::Metadata;
 
-sub files {
-	my ($dir, $pattern) = @_;
-	return find(file => name => $pattern, in => $dir);
+sub write_file {
+	my ($filename, $mode, $content) = @_;
+	open my $fh, ">:$mode", $filename or die "Could not open $filename: $!\n";;
+	print $fh $content;
 }
 
 sub modulebuildtiny {
