@@ -38,7 +38,7 @@ my %actions = (
 		$arch->add_files(@files);
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		my $release_name = $meta->name . '-' . $meta->version;
-		print "tar xjf $release_name.tar.gz @files\n" if $opts{verbose} > 0;
+		print "tar czf $release_name.tar.gz @files\n" if $opts{verbose} > 0;
 		$arch->write("$release_name.tar.gz", COMPRESS_GZIP, $release_name);
 	},
 	distdir => sub {
