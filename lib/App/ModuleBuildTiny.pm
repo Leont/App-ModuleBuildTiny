@@ -11,7 +11,9 @@ use Archive::Tar;
 use Carp qw/croak/;
 use CPAN::Meta;
 use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
+use File::Basename qw/basename/;
 use File::Path qw/mkpath rmtree/;
+use File::Spec::Functions qw/catfile rel2abs/;
 use Getopt::Long qw/GetOptionsFromArray/;
 use Module::CPANfile;
 use Module::Metadata;
@@ -65,11 +67,13 @@ my %actions = (
 	},
 	meta => sub {
 		my %opts = @_;
-		my ($filename) = @{ $opts{arguments} };
+		my $distname = basename(rel2abs('.'));
+		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
+		my $filename = catfile('lib', split '-', $distname).'.pm';
+
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
 		my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
-		(my $distname = $data->name) =~ s/::/-/;
 
 		my $prereqs = Module::CPANfile->load('cpanfile')->prereq_specs;
 
