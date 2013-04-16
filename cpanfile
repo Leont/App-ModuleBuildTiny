@@ -1,4 +1,3 @@
-requires perl => '5.0100';
 requires 'Archive::Tar' => '0';
 requires 'CPAN::Meta' => '0';
 requires 'Exporter' => 5.57;

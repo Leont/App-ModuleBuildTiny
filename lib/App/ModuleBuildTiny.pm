@@ -1,6 +1,5 @@
 package App::ModuleBuildTiny;
 
-use 5.010;
 use strict;
 use warnings FATAL => 'all';
 our $VERSION = '0.001';
@@ -23,83 +22,89 @@ sub write_file {
 	print $fh $content;
 }
 
+my %actions = (
+	buildpl => sub {
+		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
+	},
+	dist => sub {
+		my %opts = @_;
+		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
+		my $meta = CPAN::Meta->load_file($metafile);
+		my $manifest = maniread() or croak 'No MANIFEST found';
+		my @files = keys %{$manifest};
+		my $arch = Archive::Tar->new;
+		$arch->add_files(@files);
+		$_->mode($_->mode & ~oct 22) for $arch->get_files;
+		my $release_name = $meta->name . '-' . $meta->version;
+		print "tar xjf $release_name.tar.gz @files\n" if $opts{verbose} > 0;
+		$arch->write("$release_name.tar.gz", COMPRESS_GZIP, $release_name);
+	},
+	distdir => sub {
+		my %opts = @_;
+		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
+		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
+		my $meta = CPAN::Meta->load_file($metafile);
+		my $manifest = maniread() or croak 'No MANIFEST found';
+		my $release_name = $meta->name . '-' . $meta->version;
+		mkpath($release_name, $opts{verbose}, oct '755');
+		manicopy($manifest, $release_name, 'cp');
+	},
+	manifest => sub {
+		my %opts = @_;
+		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
+		my @default_skips = qw{_build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
+		writefile('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
+		mkmanifest();
+	},
+	distcheck => sub {
+		my %opts = @_;
+		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
+		my ($missing, $extra) = fullcheck();
+		croak "Missing on filesystem: @{$missing}" if @{$missing};
+		croak "Missing in MANIFEST: @{$extra}" if @{$extra}
+	},
+	meta => sub {
+		my %opts = @_;
+		my ($filename) = @{ $opts{arguments} };
+		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
+		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
+		my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+		(my $distname = $data->name) =~ s/::/-/;
+
+		my $prereqs = Module::CPANfile->load('cpanfile')->prereq_specs;
+
+		my %metahash = (
+			name => $distname,
+			version => $data->version($data->name)->stringify,
+			author => $author,
+			abstract => $abstract,
+			dynamic_config => 0,
+			license => 'perl_5',
+			prereqs => $prereqs,
+			release_status => 'stable',
+		);
+		my $meta = CPAN::Meta->create(\%metahash);
+		$meta->save('META.json');
+		$meta->save('META.yml', { version => 1.4 });
+	},
+	clean => sub {
+		my %opts = @_;
+		rmtree('blib', $opts{verbose});
+	},
+	realclean => sub {
+		my %opts = @_;
+		rmtree($_, $opts{verbose}) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
+	},
+);
+
 sub modulebuildtiny {
 	my ($action, @arguments) = @_;
-	my $verbose = 0;
-	GetOptionsFromArray(\@arguments, verbose => \$verbose);
-	local $ExtUtils::Manifest::Quiet = !$verbose;
+	GetOptionsFromArray(\@arguments, \my %opts);
 
-	for ($action) {
-		when (undef) {
-			croak 'No action given';
-		}
-		when ('buildpl') {
-			write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
-		}
-		when ('dist') {
-			my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
-			my $meta = CPAN::Meta->load_file($metafile);
-			my $manifest = maniread() or croak 'No MANIFEST found';
-			my @files = keys %{$manifest};
-			my $arch = Archive::Tar->new;
-			$arch->add_files(@files);
-			$_->mode($_->mode & ~oct 22) for $arch->get_files;
-			my $release_name = $meta->name . '-' . $meta->version;
-			print "tar xjf $release_name.tar.gz @files\n" if $verbose > 0;
-			$arch->write("$release_name.tar.gz", COMPRESS_GZIP, $release_name);
-		}
-		when ('distdir') {
-			my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
-			my $meta = CPAN::Meta->load_file($metafile);
-			my $manifest = maniread() or croak 'No MANIFEST found';
-			my $release_name = $meta->name . '-' . $meta->version;
-			mkpath($release_name, $verbose, oct '755');
-			manicopy($manifest, $release_name, 'cp');
-		}
-		when ('manifest') {
-			my @default_skips = qw{_build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
-			writefile('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
-			mkmanifest();
-		}
-		when ('distcheck') {
-			my ($missing, $extra) = fullcheck();
-			croak "Missing on filesystem: @{$missing}" if @{$missing};
-			croak "Missing in MANIFEST: @{$extra}" if @{$extra}
-		}
-		when ('meta') {
-			my $filename = shift @arguments;
-			my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
-			my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
-			my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
-			(my $distname = $data->name) =~ s/::/-/;
-
-			my $prereqs = Module::CPANfile->load('cpanfile')->prereq_specs;
-
-			my %metahash = (
-				name => $distname,
-				version => $data->version($data->name)->stringify,
-				author => $author,
-				abstract => $abstract,
-				dynamic_config => 0,
-				license => 'perl_5',
-				prereqs => $prereqs,
-				release_status => 'stable',
-			);
-			my $meta = CPAN::Meta->create(\%metahash);
-			$meta->save('META.json');
-			$meta->save('META.yml', { version => 1.4 });
-		}
-		when ('clean') {
-			rmtree('blib', $verbose);
-		}
-		when ('realclean') {
-			rmtree($_, $verbose) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
-		}
-		default {
-			die "No such action '$action' known\n";
-		}
-	}
-	return;
+	croak 'No action given' unless defined $action;
+	my $call = $actions{$action};
+	croak "No such action '$action' known\n" if not $call;
+	return $call->(%opts, arguments => \@arguments);
 }
 
 1;
