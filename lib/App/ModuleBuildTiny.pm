@@ -91,6 +91,12 @@ my %actions = (
 		$meta->save('META.json');
 		$meta->save('META.yml', { version => 1.4 });
 	},
+	listdeps => sub {
+		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
+		my $meta = CPAN::Meta->load_file($metafile);
+		my @reqs = map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+		print "$_\n" for sort @reqs;
+	},
 	clean => sub {
 		my %opts = @_;
 		rmtree('blib', $opts{verbose});
