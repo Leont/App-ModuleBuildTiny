@@ -13,7 +13,7 @@ use Carp qw/croak/;
 use CPAN::Meta;
 use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
 use File::Find::Rule qw/find/;
-use File::Path qw/mkpath/;
+use File::Path qw/mkpath rmtree/;
 use File::Slurp qw/write_file/;
 use Getopt::Long qw/GetOptionsFromArray/;
 use Hash::Diff qw/left_diff/;
