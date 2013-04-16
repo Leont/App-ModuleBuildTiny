@@ -16,10 +16,8 @@ use File::Find::Rule qw/find/;
 use File::Path qw/mkpath rmtree/;
 use File::Slurp qw/write_file/;
 use Getopt::Long qw/GetOptionsFromArray/;
-use Hash::Diff qw/left_diff/;
+use Module::CPANfile;
 use Module::Metadata;
-use Perl::PrereqScanner;
-use Version::Requirements;
 
 sub files {
 	my ($dir, $pattern) = @_;
@@ -76,14 +74,7 @@ sub modulebuildtiny {
 			my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
 			(my $distname = $data->name) =~ s/::/-/;
 
-			my $scanner = Perl::PrereqScanner->new;
-			my ($requires, $build_requires) = map { Version::Requirements->new } 1 .. 2;
-			for my $file (files('lib', '*.pm'), files('bin')) {
-				$requires->add_requirements($scanner->scan_file($file));
-			}
-			for my $file (files('t', '*.t'), files('t/lib', '*.pm')) {
-				$build_requires->add_requirements($scanner->scan_file($file));
-			}
+			my $prereqs = Module::CPANfile->load('cpanfile')->prereq_specs;
 
 			my %metahash = (
 				name => $distname,
@@ -92,11 +83,7 @@ sub modulebuildtiny {
 				abstract => $abstract,
 				dynamic_config => 0,
 				license => 'perl_5',
-				prereqs => {
-					runtime => { requires => $requires->as_string_hash },
-					build => { requires => left_diff($build_requires->as_string_hash, $requires->as_string_hash) },
-					configure => { requires => { 'Module::Build::Tiny' => 0.008 } },
-				},
+				prereqs => $prereqs,
 				release_status => 'stable',
 			);
 			my $meta = CPAN::Meta->create(\%metahash);
