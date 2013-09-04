@@ -134,6 +134,16 @@ App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
 
 version 0.001
 
+=head1 SEE ALSO
+
+=over 4
+
+=item * Dist::Zilla
+
+=item * App::scan_prereqs_cpanfile
+
+=back
+
 =head1 AUTHOR
 
 Leon Timmermans <leont@cpan.org>
