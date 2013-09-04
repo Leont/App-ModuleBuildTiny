@@ -1,5 +1,6 @@
 package App::ModuleBuildTiny;
 
+use 5.008;
 use strict;
 use warnings FATAL => 'all';
 our $VERSION = '0.001';
@@ -19,9 +20,11 @@ use Module::CPANfile;
 use Module::Metadata;
 
 sub write_file {
-	my ($filename, $mode, $content) = @_;
-	open my $fh, ">:$mode", $filename or die "Could not open $filename: $!\n";;
+	my ($filename, $content) = @_;
+	open my $fh, ">:raw", $filename or die "Could not open $filename: $!\n";;
 	print $fh $content;
+	close $fh;
+	return;
 }
 
 my %actions = (
@@ -38,7 +41,7 @@ my %actions = (
 		$arch->add_files(@files);
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		my $release_name = $meta->name . '-' . $meta->version;
-		print "tar czf $release_name.tar.gz @files\n" if $opts{verbose} > 0;
+		print "tar czf $release_name.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
 		$arch->write("$release_name.tar.gz", COMPRESS_GZIP, $release_name);
 	},
 	distdir => sub {
@@ -55,7 +58,7 @@ my %actions = (
 		my %opts = @_;
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
 		my @default_skips = qw{_build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
-		writefile('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
+		write_file('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
 		mkmanifest();
 	},
 	distcheck => sub {
@@ -69,7 +72,7 @@ my %actions = (
 		my %opts = @_;
 		my $distname = basename(rel2abs('.'));
 		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
-		my $filename = catfile('lib', split '-', $distname).'.pm';
+		my $filename = catfile('lib', split /-/, $distname).'.pm';
 
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
