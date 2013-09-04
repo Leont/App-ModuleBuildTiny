@@ -1,5 +1,6 @@
 Build.PL
 Changes
+cpanfile
 lib/App/ModuleBuildTiny.pm
 LICENSE
 MANIFEST			This list of files

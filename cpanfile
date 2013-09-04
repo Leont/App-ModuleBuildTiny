@@ -1,10 +1,16 @@
-requires 'Archive::Tar' => '0';
-requires 'CPAN::Meta' => '0';
-requires 'Exporter' => 5.57;
-requires 'ExtUtils::Manifest' => 0;
-requires 'File::Basename' => 0;
-requires 'File::Path' => 0;
-requires 'Getopt::Long' => 0;
-requires 'File::Spec::Functions' => 0;
-requires 'Module::Metadata' => 0;
-requires 'Module::CPANfile' => 0;
+requires 'Archive::Tar';
+requires 'CPAN::Meta';
+requires 'Exporter', '5.57';
+requires 'Getopt::Long';
+requires 'Module::CPANfile';
+requires 'Module::Metadata';
+requires 'perl', '5.008';
+
+on configure => sub {
+    requires 'Module::Build::Tiny';
+};
+
+on test => sub {
+    requires 'File::Temp';
+    requires 'Test::More';
+};

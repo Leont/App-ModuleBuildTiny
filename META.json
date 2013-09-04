@@ -1,0 +1,39 @@
+{
+   "abstract" : "A standalone authoring tool for Module::Build::Tiny",
+   "author" : [
+      "Leon Timmermans <leont@cpan.org>"
+   ],
+   "dynamic_config" : 0,
+   "generated_by" : "CPAN::Meta version 2.132140",
+   "license" : "perl_5",
+   "meta-spec" : {
+      "version" : 2
+   },
+   "name" : "App-ModuleBuildTiny",
+   "prereqs" : {
+      "configure" : {
+         "requires" : {
+            "Module::Build::Tiny" : 0
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Archive::Tar" : 0,
+            "CPAN::Meta" : 0,
+            "Exporter" : "5.57",
+            "Getopt::Long" : 0,
+            "Module::CPANfile" : 0,
+            "Module::Metadata" : 0,
+            "perl" : "5.008"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "File::Temp" : 0,
+            "Test::More" : 0
+         }
+      }
+   },
+   "release_status" : "stable",
+   "version" : "0.001"
+}

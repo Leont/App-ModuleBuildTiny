@@ -1,6 +1,6 @@
 _build
-*META.yml
-*META.json
+MYMETA.json
+MYMETA.yml
 *~
 *.bak
 *.swp
