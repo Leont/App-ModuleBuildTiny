@@ -96,6 +96,7 @@ my %actions = (
 			license => 'perl_5',
 			prereqs => $prereqs,
 			release_status => 'stable',
+			generated_by => "App::ModuleBuildTiny version $VERSION",
 		);
 		my $meta = CPAN::Meta->create(\%metahash);
 		$meta->save('META.json');
