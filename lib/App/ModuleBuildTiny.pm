@@ -31,8 +31,14 @@ my %actions = (
 	buildpl => sub {
 		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
 	},
+	prebuild => sub {
+		my %opts = @_;
+		dispatch('meta', %opts);
+		dispatch('manifest', %opts);
+	},
 	dist => sub {
 		my %opts = @_;
+		dispatch('prebuild', %opts);
 		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
 		my $meta = CPAN::Meta->load_file($metafile);
 		my $manifest = maniread() or croak 'No MANIFEST found';
@@ -46,6 +52,7 @@ my %actions = (
 	},
 	distdir => sub {
 		my %opts = @_;
+		dispatch('prebuild', %opts);
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
 		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
 		my $meta = CPAN::Meta->load_file($metafile);
@@ -110,14 +117,18 @@ my %actions = (
 	},
 );
 
+sub dispatch {
+	my ($action, %options) = @_;
+	my $call = $actions{$action};
+	croak "No such action '$action' known\n" if not $call;
+	return $call->(%options);
+}
+
 sub modulebuildtiny {
 	my ($action, @arguments) = @_;
 	GetOptionsFromArray(\@arguments, \my %opts);
-
 	croak 'No action given' unless defined $action;
-	my $call = $actions{$action};
-	croak "No such action '$action' known\n" if not $call;
-	return $call->(%opts, arguments => \@arguments);
+	return dispatch($action, %opts, arguments => \@arguments);
 }
 
 1;
