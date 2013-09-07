@@ -10,6 +10,7 @@ our @EXPORT = qw/modulebuildtiny/;
 
 use Archive::Tar;
 use Carp qw/croak/;
+use Config;
 use CPAN::Meta;
 use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
 use File::Basename qw/basename/;
@@ -84,6 +85,13 @@ my %actions = (
 		my $manifest = maniread() or croak 'No MANIFEST found';
 		mkpath($opts{release}, $opts{verbose}, oct '755');
 		manicopy($manifest, $opts{release}, 'cp');
+	},
+	test => sub {
+		my %opts = @_;
+		dispatch('distdir', %opts);
+		my $extra = (grep { /release/ } @{ $opts{arguments} }) ? 'RELEASE_TESTING=1' : '';
+		system("cd '$opts{release}'; '$Config{perlpath}' Build.PL; ./Build; AUTHOR_TESTING=1 $extra ./Build test");
+		rmtree($opts{release}, 0);
 	},
 	manifest => sub {
 		my %opts = @_;
