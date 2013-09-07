@@ -27,6 +27,36 @@ sub write_file {
 	return;
 }
 
+sub get_meta {
+	if (-e 'META.json') {
+		return CPAN::Meta->load_file('META.json');
+	}
+	else {
+		my $distname = basename(rel2abs('.'));
+		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
+		my $filename = catfile('lib', split /-/, $distname).'.pm';
+
+		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
+		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
+		my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+
+		my $prereqs = -f 'cpanfile' ? Module::CPANfile->load('cpanfile')->prereq_specs : {};
+
+		my %metahash = (
+			name => $distname,
+			version => $data->version($data->name)->stringify,
+			author => $author,
+			abstract => $abstract,
+			dynamic_config => 0,
+			license => 'perl_5',
+			prereqs => $prereqs,
+			release_status => 'stable',
+			generated_by => "App::ModuleBuildTiny version $VERSION",
+		);
+		return CPAN::Meta->create(\%metahash);
+	}
+}
+
 my %actions = (
 	buildpl => sub {
 		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
@@ -39,27 +69,21 @@ my %actions = (
 	dist => sub {
 		my %opts = @_;
 		dispatch('prebuild', %opts);
-		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
-		my $meta = CPAN::Meta->load_file($metafile);
 		my $manifest = maniread() or croak 'No MANIFEST found';
 		my @files = keys %{$manifest};
 		my $arch = Archive::Tar->new;
 		$arch->add_files(@files);
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
-		my $release_name = $meta->name . '-' . $meta->version;
-		print "tar czf $release_name.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
-		$arch->write("$release_name.tar.gz", COMPRESS_GZIP, $release_name);
+		print "tar czf $opts{release}.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
+		$arch->write("$opts{release}.tar.gz", COMPRESS_GZIP, $opts{release});
 	},
 	distdir => sub {
 		my %opts = @_;
 		dispatch('prebuild', %opts);
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
-		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
-		my $meta = CPAN::Meta->load_file($metafile);
 		my $manifest = maniread() or croak 'No MANIFEST found';
-		my $release_name = $meta->name . '-' . $meta->version;
-		mkpath($release_name, $opts{verbose}, oct '755');
-		manicopy($manifest, $release_name, 'cp');
+		mkpath($opts{release}, $opts{verbose}, oct '755');
+		manicopy($manifest, $opts{release}, 'cp');
 	},
 	manifest => sub {
 		my %opts = @_;
@@ -77,35 +101,12 @@ my %actions = (
 	},
 	meta => sub {
 		my %opts = @_;
-		my $distname = basename(rel2abs('.'));
-		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
-		my $filename = catfile('lib', split /-/, $distname).'.pm';
-
-		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
-		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
-		my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
-
-		my $prereqs = Module::CPANfile->load('cpanfile')->prereq_specs;
-
-		my %metahash = (
-			name => $distname,
-			version => $data->version($data->name)->stringify,
-			author => $author,
-			abstract => $abstract,
-			dynamic_config => 0,
-			license => 'perl_5',
-			prereqs => $prereqs,
-			release_status => 'stable',
-			generated_by => "App::ModuleBuildTiny version $VERSION",
-		);
-		my $meta = CPAN::Meta->create(\%metahash);
-		$meta->save('META.json');
-		$meta->save('META.yml', { version => 1.4 });
+		$opts{meta}->save('META.json');
+		$opts{meta}->save('META.yml', { version => 1.4 });
 	},
 	listdeps => sub {
-		my ($metafile) = grep { -e $_ } qw/META.json META.yml/ or croak 'No META information provided';
-		my $meta = CPAN::Meta->load_file($metafile);
-		my @reqs = map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+		my %opts = @_;
+		my @reqs = map { $opts{meta}->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
 		print "$_\n" for sort @reqs;
 	},
 	clean => sub {
@@ -129,7 +130,8 @@ sub modulebuildtiny {
 	my ($action, @arguments) = @_;
 	GetOptionsFromArray(\@arguments, \my %opts);
 	croak 'No action given' unless defined $action;
-	return dispatch($action, %opts, arguments => \@arguments);
+	my $meta = get_meta();
+	return dispatch($action, %opts, arguments => \@arguments, meta => $meta, release => $meta->name . '-' . $meta->version);
 }
 
 1;
