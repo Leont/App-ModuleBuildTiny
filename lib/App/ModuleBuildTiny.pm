@@ -62,14 +62,15 @@ my %actions = (
 	buildpl => sub {
 		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
 	},
-	prebuild => sub {
+	prepare => sub {
 		my %opts = @_;
+		dispatch('buildpl', %opts) if not -e 'Build.PL';
 		dispatch('meta', %opts);
 		dispatch('manifest', %opts);
 	},
 	dist => sub {
 		my %opts = @_;
-		dispatch('prebuild', %opts);
+		dispatch('prepare', %opts);
 		my $manifest = maniread() or croak 'No MANIFEST found';
 		my @files = keys %{$manifest};
 		my $arch = Archive::Tar->new;
@@ -80,7 +81,7 @@ my %actions = (
 	},
 	distdir => sub {
 		my %opts = @_;
-		dispatch('prebuild', %opts);
+		dispatch('prepare', %opts);
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
 		my $manifest = maniread() or croak 'No MANIFEST found';
 		mkpath($opts{release}, $opts{verbose}, oct '755');
