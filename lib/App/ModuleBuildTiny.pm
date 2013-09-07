@@ -97,7 +97,7 @@ my %actions = (
 	manifest => sub {
 		my %opts = @_;
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
-		my @default_skips = qw{_build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
+		my @default_skips = qw{blib _build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
 		write_file('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
 		mkmanifest();
 	},
