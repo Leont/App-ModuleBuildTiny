@@ -16,6 +16,7 @@ use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
 use File::Basename qw/basename/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile rel2abs/;
+use File::Temp qw/tempdir/;
 use Getopt::Long qw/GetOptionsFromArray/;
 use Module::CPANfile;
 use Module::Metadata;
@@ -89,10 +90,10 @@ my %actions = (
 	},
 	test => sub {
 		my %opts = @_;
-		dispatch('distdir', %opts);
+		my $release = tempdir(CLEANUP => 1);
+		dispatch('distdir', %opts, release => $release);
 		my $extra = (grep { /release/ } @{ $opts{arguments} }) ? 'RELEASE_TESTING=1' : '';
-		system("cd '$opts{release}'; '$Config{perlpath}' Build.PL; ./Build; AUTHOR_TESTING=1 $extra ./Build test");
-		rmtree($opts{release}, 0);
+		system("cd '$release'; '$Config{perlpath}' Build.PL; ./Build; AUTHOR_TESTING=1 $extra ./Build test");
 	},
 	manifest => sub {
 		my %opts = @_;

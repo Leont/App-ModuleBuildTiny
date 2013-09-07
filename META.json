@@ -21,6 +21,7 @@
             "Archive::Tar" : 0,
             "CPAN::Meta" : 0,
             "Exporter" : "5.57",
+            "File::Temp" : 0,
             "Getopt::Long" : 0,
             "Module::CPANfile" : 0,
             "Module::Metadata" : 0,
@@ -29,7 +30,6 @@
       },
       "test" : {
          "requires" : {
-            "File::Temp" : 0,
             "Test::More" : 0
          }
       }

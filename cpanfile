@@ -1,6 +1,7 @@
 requires 'Archive::Tar';
 requires 'CPAN::Meta';
 requires 'Exporter', '5.57';
+requires 'File::Temp';
 requires 'Getopt::Long';
 requires 'Module::CPANfile';
 requires 'Module::Metadata';
@@ -11,6 +12,5 @@ on configure => sub {
 };
 
 on test => sub {
-    requires 'File::Temp';
     requires 'Test::More';
 };
