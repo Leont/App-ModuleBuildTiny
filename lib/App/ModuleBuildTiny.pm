@@ -64,11 +64,14 @@ my $parser = Getopt::Long::Parser->new(config => [ qw/require_order pass_through
 
 my %actions = (
 	buildpl => sub {
-		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
+		my %opts = @_;
+		my $minimum_mbt = Module::Metadata->new_from_module('Module::Build::Tiny')->version->numify;
+		my $minimum_perl = $opts{meta}->effective_prereqs->requirements_for('runtime', 'requires')->requirements_for_module('perl') || '5.006';
+		write_file('Build.PL', "use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n");
 	},
 	prepare => sub {
 		my %opts = @_;
-		dispatch('buildpl', %opts) if not -e 'Build.PL';
+		dispatch('buildpl', %opts);
 		dispatch('meta', %opts);
 		dispatch('manifest', %opts);
 	},

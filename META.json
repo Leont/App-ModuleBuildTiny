@@ -15,7 +15,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build::Tiny" : 0
+            "Module::Build::Tiny" : "0.026"
          }
       },
       "runtime" : {

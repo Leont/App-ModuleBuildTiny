@@ -5,7 +5,7 @@ author:
 build_requires:
   Test::More: 0
 configure_requires:
-  Module::Build::Tiny: 0
+  Module::Build::Tiny: 0.026
 dynamic_config: 0
 generated_by: 'App::ModuleBuildTiny version 0.001, CPAN::Meta::Converter version 2.132140'
 license: perl
