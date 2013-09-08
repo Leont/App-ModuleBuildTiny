@@ -17,7 +17,7 @@ use File::Basename qw/basename/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile rel2abs/;
 use File::Temp qw/tempdir/;
-use Getopt::Long qw/GetOptionsFromArray/;
+use Getopt::Long;
 use Module::CPANfile;
 use Module::Metadata;
 
@@ -60,6 +60,8 @@ sub get_meta {
 	}
 }
 
+my $parser = Getopt::Long::Parser->new(config => [ qw/require_order pass_through gnu_compat/ ]);
+
 my %actions = (
 	buildpl => sub {
 		write_file('Build.PL', "use Module::Build::Tiny;\nBuild_PL();\n");
@@ -78,23 +80,24 @@ my %actions = (
 		my $arch = Archive::Tar->new;
 		$arch->add_files(@files);
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
-		print "tar czf $opts{release}.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
-		$arch->write("$opts{release}.tar.gz", COMPRESS_GZIP, $opts{release});
+		print "tar czf $opts{name}.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
+		$arch->write("$opts{name}.tar.gz", COMPRESS_GZIP, $opts{name});
 	},
 	distdir => sub {
 		my %opts = @_;
 		dispatch('prepare', %opts);
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
 		my $manifest = maniread() or croak 'No MANIFEST found';
-		mkpath($opts{release}, $opts{verbose}, oct '755');
-		manicopy($manifest, $opts{release}, 'cp');
+		mkpath($opts{name}, $opts{verbose}, oct '755');
+		manicopy($manifest, $opts{name}, 'cp');
 	},
 	test => sub {
-		my %opts = @_;
-		my $release = tempdir(CLEANUP => 1);
-		dispatch('distdir', %opts, release => $release);
-		my $extra = (grep { /release/ } @{ $opts{arguments} }) ? 'RELEASE_TESTING=1' : '';
-		system("cd '$release'; '$Config{perlpath}' Build.PL; ./Build; AUTHOR_TESTING=1 $extra ./Build test");
+		my %opts = (@_, author => 1);
+		my $name = tempdir(CLEANUP => 1);
+		dispatch('distdir', %opts, name => $name);
+		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author!/);
+		my $env = join ' ', map { $opts{$_} ? uc($_).'_TESTING=1' : () } qw/release author automated/;
+		system("cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test");
 	},
 	manifest => sub {
 		my %opts = @_;
@@ -139,10 +142,10 @@ sub dispatch {
 
 sub modulebuildtiny {
 	my ($action, @arguments) = @_;
-	GetOptionsFromArray(\@arguments, \my %opts);
+	$parser->getoptionsfromarray(\@arguments, \my %opts, 'verbose!');
 	croak 'No action given' unless defined $action;
 	my $meta = get_meta();
-	return dispatch($action, %opts, arguments => \@arguments, meta => $meta, release => $meta->name . '-' . $meta->version);
+	return dispatch($action, %opts, arguments => \@arguments, meta => $meta, name => $meta->name . '-' . $meta->version);
 }
 
 1;
