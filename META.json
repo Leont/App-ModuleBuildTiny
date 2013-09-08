@@ -5,7 +5,9 @@
    ],
    "dynamic_config" : 0,
    "generated_by" : "App::ModuleBuildTiny version 0.001",
-   "license" : "perl_5",
+   "license" : [
+      "perl_5"
+   ],
    "meta-spec" : {
       "version" : 2
    },

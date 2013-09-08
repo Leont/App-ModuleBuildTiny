@@ -31,7 +31,7 @@ sub write_file {
 
 sub get_meta {
 	if (-e 'META.json') {
-		return CPAN::Meta->load_file('META.json');
+		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
 		my $distname = basename(rel2abs('.'));
@@ -40,22 +40,23 @@ sub get_meta {
 
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
-		my $author = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+		my $version = $data->version($data->name)->stringify;
 
 		my $prereqs = -f 'cpanfile' ? Module::CPANfile->load('cpanfile')->prereq_specs : {};
 
 		my %metahash = (
 			name => $distname,
-			version => $data->version($data->name)->stringify,
-			author => $author,
+			version => $version,
+			author => $authors,
 			abstract => $abstract,
 			dynamic_config => 0,
-			license => 'perl_5',
+			license => [ 'perl_5' ],
 			prereqs => $prereqs,
-			release_status => 'stable',
+			release_status => $version =~ /_|-TRIAL$/ ? 'testing' : 'stable',
 			generated_by => "App::ModuleBuildTiny version $VERSION",
 		);
-		return CPAN::Meta->create(\%metahash);
+		return CPAN::Meta->create(\%metahash, { lazy_validation => 0 });
 	}
 }
 
@@ -181,7 +182,5 @@ the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-
 __END__
 
-#ABSTRACT: a standalone authoring tool for Module::Build::Tiny
