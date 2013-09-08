@@ -150,10 +150,6 @@ sub modulebuildtiny {
 
 1;
 
-
-
-=pod
-
 =head1 NAME
 
 App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
@@ -162,13 +158,25 @@ App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
 
 version 0.001
 
+=head1 FUNCTIONS
+
+=over 4
+
+=item * modulebuildtiny($action, @arguments)
+
+This function runs a modulebuildtiny command. It expects at least one argument: the action. It may receive additional ARGV style options, the only one defined for all actions is C<verbose>.
+
+=back
+
 =head1 SEE ALSO
 
 =over 4
 
 =item * Dist::Zilla
 
-=item * App::scan_prereqs_cpanfile
+=item * scan_prereqs_cpanfile
+
+=item * cpan_upload
 
 =back
 
@@ -185,5 +193,11 @@ the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-__END__
+=begin Pod::Coverage
+
+write_file
+get_meta
+dispatch
+
+=end Pod::Coverage
 
