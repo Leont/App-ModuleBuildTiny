@@ -30,7 +30,7 @@ sub write_file {
 }
 
 sub get_meta {
-	if (-e 'META.json') {
+	if (-e 'META.json' and -M 'META.json' < -M 'cpanfile') {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
