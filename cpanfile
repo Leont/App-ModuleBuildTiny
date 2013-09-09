@@ -8,7 +8,7 @@ requires 'Module::Metadata';
 requires 'perl', '5.008';
 
 on configure => sub {
-    requires 'Module::Build::Tiny', '0.026';
+    requires 'Module::Build::Tiny', '0.027';
 };
 
 on test => sub {
