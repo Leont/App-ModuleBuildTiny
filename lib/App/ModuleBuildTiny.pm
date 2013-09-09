@@ -103,6 +103,13 @@ my %actions = (
 		my $env = join ' ', map { $opts{$_} ? uc($_).'_TESTING=1' : () } qw/release author automated/;
 		system("cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test");
 	},
+	run => sub {
+		my %opts = @_;
+		my $name = tempdir(CLEANUP => 1);
+		dispatch('distdir', %opts, name => $name);
+		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
+		system("cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $command");
+	},
 	manifest => sub {
 		my %opts = @_;
 		local $ExtUtils::Manifest::Quiet = !$opts{verbose};

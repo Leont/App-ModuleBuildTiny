@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          Added run action
           Added --json to listdeps
 
 0.001     2013-09-09
