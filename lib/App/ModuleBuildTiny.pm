@@ -175,6 +175,10 @@ App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
 
 version 0.002
 
+=head1 DESCRIPTION
+
+App::ModuleBuild contains the implementation of the L<mbtiny> tool.
+
 =head1 FUNCTIONS
 
 =over 4
@@ -182,6 +186,8 @@ version 0.002
 =item * modulebuildtiny($action, @arguments)
 
 This function runs a modulebuildtiny command. It expects at least one argument: the action. It may receive additional ARGV style options, the only one defined for all actions is C<verbose>.
+
+The actions are documented in the L<mbtiny> documentation.
 
 =back
 
@@ -194,6 +200,8 @@ This function runs a modulebuildtiny command. It expects at least one argument: 
 =item * scan_prereqs_cpanfile
 
 =item * cpan_upload
+
+=item * perl-reversion
 
 =back
 

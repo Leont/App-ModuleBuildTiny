@@ -5,3 +5,57 @@ use warnings FATAL => 'all';
 use App::ModuleBuildTiny;
 
 modulebuildtiny(@ARGV);
+
+=head1 NAME
+
+mbtiny - A standalone authoring script for Module::Build::Tiny
+
+=head1 VERSION
+
+version 0.002
+
+=head1 SYNOPSIS
+
+ mbtiny listdeps | cpanm
+ mbtiny test --release
+ mbtiny dist
+
+=head1 DESCRIPTION
+
+=head1 SUBCOMMANDS
+
+=over 4
+
+=item * dist
+
+This creates a distribution tarball.
+
+=item * distdir
+
+This creates a directory containing all of the files of the distribution.
+
+=item * test
+
+This runs all of the tests of a distribution. It takes two options that can both be negated:
+
+=over 4
+
+=item * release
+
+Run release tests. Defaults to false.
+
+=item * author
+
+Run author tests. Defaults to true.
+
+=back
+
+=item * run
+
+Run the specified command in a build distribution. If no command is given, the C<$SHELL> is invoked.
+
+=item * listdeps
+
+List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option
+
+=back

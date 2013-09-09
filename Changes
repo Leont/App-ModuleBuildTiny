@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          Document the mbtiny command
           Added run action
           Added --json to listdeps
 
