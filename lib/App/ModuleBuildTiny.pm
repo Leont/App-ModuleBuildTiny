@@ -24,9 +24,9 @@ use Module::Metadata;
 
 sub write_file {
 	my ($filename, $content) = @_;
-	open my $fh, ">:raw", $filename or die "Could not open $filename: $!\n";;
-	print $fh $content;
-	close $fh;
+	open my $fh, '>:raw', $filename or die "Could not open $filename: $!\n";
+	print $fh $content or croak "Couldn't write to $filename: $!";
+	close $fh or croak "Couldn't write to $filename: $!";
 	return;
 }
 
@@ -37,7 +37,7 @@ sub get_meta {
 	else {
 		my $distname = basename(rel2abs('.'));
 		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
-		my $filename = catfile('lib', split /-/, $distname).'.pm';
+		my $filename = catfile('lib', split /-/, $distname) . '.pm';
 
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
@@ -47,21 +47,21 @@ sub get_meta {
 		my $prereqs = -f 'cpanfile' ? Module::CPANfile->load('cpanfile')->prereq_specs : {};
 
 		my %metahash = (
-			name => $distname,
-			version => $version,
-			author => $authors,
-			abstract => $abstract,
+			name           => $distname,
+			version        => $version,
+			author         => $authors,
+			abstract       => $abstract,
 			dynamic_config => 0,
-			license => [ 'perl_5' ],
-			prereqs => $prereqs,
+			license        => ['perl_5'],
+			prereqs        => $prereqs,
 			release_status => $version =~ /_|-TRIAL$/ ? 'testing' : 'stable',
-			generated_by => "App::ModuleBuildTiny version $VERSION",
+			generated_by   => "App::ModuleBuildTiny version $VERSION",
 		);
 		return CPAN::Meta->create(\%metahash, { lazy_validation => 0 });
 	}
 }
 
-my $parser = Getopt::Long::Parser->new(config => [ qw/require_order pass_through gnu_compat/ ]);
+my $parser = Getopt::Long::Parser->new(config => [qw/require_order pass_through gnu_compat/]);
 
 my %actions = (
 	buildpl => sub {
@@ -100,15 +100,15 @@ my %actions = (
 		my $name = tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, name => $name);
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author!/);
-		my $env = join ' ', map { $opts{$_} ? uc($_).'_TESTING=1' : () } qw/release author automated/;
-		system("cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test");
+		my $env = join ' ', map { $opts{$_} ? uc($_) . '_TESTING=1' : () } qw/release author automated/;
+		system "cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test";
 	},
 	run => sub {
 		my %opts = @_;
 		my $name = tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, name => $name);
 		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
-		system("cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $command");
+		system "cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $command";
 	},
 	manifest => sub {
 		my %opts = @_;
