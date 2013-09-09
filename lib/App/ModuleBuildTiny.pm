@@ -153,14 +153,6 @@ my %actions = (
 			print JSON::PP->new->ascii->pretty->encode($hash);
 		}
 	},
-	clean => sub {
-		my %opts = @_;
-		rmtree('blib', $opts{verbose});
-	},
-	realclean => sub {
-		my %opts = @_;
-		rmtree($_, $opts{verbose}) for qw/blib Build _build_params MYMETA.yml MYMETA.json/;
-	},
 );
 
 sub dispatch {
