@@ -12,10 +12,12 @@ use Archive::Tar;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
-use ExtUtils::Manifest qw/maniread fullcheck mkmanifest manicopy/;
-use File::Basename qw/basename/;
+use ExtUtils::Manifest qw/maniskip/;
+use File::Basename qw/basename dirname/;
+use File::Copy qw/copy/;
+use File::Find qw/find/;
 use File::Path qw/mkpath rmtree/;
-use File::Spec::Functions qw/catfile rel2abs/;
+use File::Spec::Functions qw/catfile abs2rel rel2abs/;
 use File::Temp qw/tempdir/;
 use Getopt::Long;
 use JSON::PP;
@@ -28,6 +30,35 @@ sub write_file {
 	print $fh $content or croak "Couldn't write to $filename: $!";
 	close $fh or croak "Couldn't write to $filename: $!";
 	return;
+}
+
+sub prereqs_for {
+	my ($meta, $phase, $type, $module, $default) = @_;
+	return $meta->effective_prereqs->requirements_for($phase, $type)->requirements_for_module($module) || $default || 0;
+}
+
+sub get_files {
+	my %opts = @_;
+	my %files;
+	my $skip = maniskip;
+	find({ 
+		no_chdir => 1,
+		wanted => sub {
+			my $name = abs2rel($_, '.');
+			$files{$name} = $name if -f $name and not $skip->($name);
+		},
+	}, '.');
+	
+	$files{'Build.PL'} ||= do {
+		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
+		my $minimum_perl = prereqs_for($opts{meta}, qw/runtime requires perl 5.006/);
+		\"use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n";
+	};
+	$files{'META.json'} ||= \$opts{meta}->as_string;
+	$files{'META.yml'} ||= \$opts{meta}->as_string({ version => 1.4 });
+	$files{MANIFEST} ||= \join "\n", keys %files;
+
+	return \%files;
 }
 
 sub get_meta {
@@ -45,6 +76,7 @@ sub get_meta {
 		my $version = $data->version($data->name)->stringify;
 
 		my $prereqs = -f 'cpanfile' ? Module::CPANfile->load('cpanfile')->prereq_specs : {};
+		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
 
 		my %metahash = (
 			name           => $distname,
@@ -64,36 +96,36 @@ sub get_meta {
 my $parser = Getopt::Long::Parser->new(config => [qw/require_order pass_through gnu_compat/]);
 
 my %actions = (
-	buildpl => sub {
-		my %opts = @_;
-		my $minimum_mbt = Module::Metadata->new_from_module('Module::Build::Tiny')->version->numify;
-		my $minimum_perl = $opts{meta}->effective_prereqs->requirements_for('runtime', 'requires')->requirements_for_module('perl') || '5.006';
-		write_file('Build.PL', "use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n");
-	},
-	prepare => sub {
-		my %opts = @_;
-		dispatch('buildpl', %opts);
-		dispatch('meta', %opts);
-		dispatch('manifest', %opts);
-	},
 	dist => sub {
-		my %opts = @_;
-		dispatch('prepare', %opts);
-		my $manifest = maniread() or croak 'No MANIFEST found';
-		my @files = keys %{$manifest};
-		my $arch = Archive::Tar->new;
-		$arch->add_files(@files);
+		my %opts    = @_;
+		my $arch    = Archive::Tar->new;
+		my $content = get_files(%opts);
+		for my $filename (keys %{$content}) {
+			if (ref $content->{$filename}) {
+				$arch->add_data($filename, ${ $content->{$filename} });
+			}
+			else {
+				$arch->add_files($filename);
+			}
+		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
-		print "tar czf $opts{name}.tar.gz @files\n" if ($opts{verbose} || 0) > 0;
+		printf "tar czf $opts{name}.tar.gz %s\n", join ' ', keys %{$content} if ($opts{verbose} || 0) > 0;
 		$arch->write("$opts{name}.tar.gz", COMPRESS_GZIP, $opts{name});
 	},
 	distdir => sub {
 		my %opts = @_;
-		dispatch('prepare', %opts);
-		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
-		my $manifest = maniread() or croak 'No MANIFEST found';
 		mkpath($opts{name}, $opts{verbose}, oct '755');
-		manicopy($manifest, $opts{name}, 'cp');
+		my $content = get_files(%opts);
+		for my $filename (keys %{$content}) {
+			my $target = catfile($opts{name}, $filename);
+			mkpath(dirname($target)) if not -d dirname($target);
+			if (ref $content->{$filename}) {
+				write_file($target, ${ $content->{$filename} });
+			}
+			else {
+				copy($filename, $target);
+			}
+		}
 	},
 	test => sub {
 		my %opts = (@_, author => 1);
@@ -109,25 +141,6 @@ my %actions = (
 		dispatch('distdir', %opts, name => $name);
 		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
 		system "cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $command";
-	},
-	manifest => sub {
-		my %opts = @_;
-		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
-		my @default_skips = qw{blib _build_params \.git/ \.gitignore .*\.swp .*~ .*\.tar\.gz MYMETA\..* MANIFEST.bak ^Build$};
-		write_file('MANIFEST.SKIP', join "\n", @default_skips) if not -e 'MANIFEST.SKIP';
-		mkmanifest();
-	},
-	distcheck => sub {
-		my %opts = @_;
-		local $ExtUtils::Manifest::Quiet = !$opts{verbose};
-		my ($missing, $extra) = fullcheck();
-		croak "Missing on filesystem: @{$missing}" if @{$missing};
-		croak "Missing in MANIFEST: @{$extra}" if @{$extra}
-	},
-	meta => sub {
-		my %opts = @_;
-		$opts{meta}->save('META.json');
-		$opts{meta}->save('META.yml', { version => 1.4 });
 	},
 	listdeps => sub {
 		my %opts = @_;
@@ -223,6 +236,8 @@ the same terms as the Perl 5 programming language system itself.
 write_file
 get_meta
 dispatch
+get_files
+prereqs_for
 
 =end Pod::Coverage
 
