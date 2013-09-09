@@ -1,4 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          Added --json to listdeps
+
 0.001     2013-09-09
           First release

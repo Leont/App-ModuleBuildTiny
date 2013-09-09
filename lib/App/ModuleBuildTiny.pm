@@ -18,6 +18,7 @@ use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile rel2abs/;
 use File::Temp qw/tempdir/;
 use Getopt::Long;
+use JSON::PP;
 use Module::CPANfile;
 use Module::Metadata;
 
@@ -123,8 +124,14 @@ my %actions = (
 	},
 	listdeps => sub {
 		my %opts = @_;
-		my @reqs = map { $opts{meta}->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
-		print "$_\n" for sort @reqs;
+		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/json/);
+		if (!$opts{json}) {
+			print "$_\n" for sort map { $opts{meta}->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+		}
+		else {
+			my $hash = $opts{meta}->effective_prereqs->as_string_hash;
+			print JSON::PP->new->ascii->pretty->encode($hash);
+		}
 	},
 	clean => sub {
 		my %opts = @_;
