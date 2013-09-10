@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.002     2013-09-10
           Switch to a generated files workflow
           Document the mbtiny command
           Added run action
