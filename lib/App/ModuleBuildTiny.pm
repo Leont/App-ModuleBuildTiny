@@ -153,6 +153,15 @@ my %actions = (
 			print JSON::PP->new->ascii->pretty->encode($hash);
 		}
 	},
+	generate => sub {
+		my %opts = @_;
+		my $content = get_files(%opts);
+		my @files = @{ $opts{arguments} };
+		for my $filename (@files) {
+			mkpath(dirname($filename)) if not -d dirname($filename);
+			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
+		}
+	}
 );
 
 sub dispatch {
