@@ -207,15 +207,25 @@ The actions are documented in the L<mbtiny> documentation.
 
 =head1 SEE ALSO
 
+=head2 Helpers
+
 =over 4
 
-=item * Dist::Zilla
+=item * L<scan_prereqs_cpanfile|scan_prereqs_cpanfile>
 
-=item * scan_prereqs_cpanfile
+=item * L<cpan-upload|cpan-upload>
 
-=item * cpan_upload
+=item * L<perl-reversion|perl-reversion>
 
-=item * perl-reversion
+=back
+
+=head2 Similar programs
+
+=over 4
+
+=item * L<Dist::Zilla|Dist::Zilla>
+
+=item * L<Minilla|Minilla>
 
 =back
 
