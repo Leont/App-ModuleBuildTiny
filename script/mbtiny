@@ -56,6 +56,6 @@ Run the specified command in a build distribution. If no command is given, the C
 
 =item * listdeps
 
-List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option
+List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option option is given, it's printed as JSON instead.
 
 =back
