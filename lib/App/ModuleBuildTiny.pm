@@ -19,7 +19,7 @@ use File::Find qw/find/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile abs2rel rel2abs/;
 use File::Temp qw/tempdir/;
-use Getopt::Long;
+use Getopt::Long 2.39;
 use JSON::PP;
 use Module::CPANfile;
 use Module::Metadata;

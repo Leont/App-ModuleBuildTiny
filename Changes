@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          Fix dependency on Getopt::Long 2.39
+
 0.002     2013-09-10
           Switch to a generated files workflow
           Document the mbtiny command
