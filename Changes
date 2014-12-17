@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.003     2014-12-17
           Fix dependency on Getopt::Long 2.39
 
 0.002     2013-09-10
