@@ -3,7 +3,7 @@ package App::ModuleBuildTiny;
 use 5.008;
 use strict;
 use warnings FATAL => 'all';
-our $VERSION = '0.002';
+our $VERSION = '0.003';
 
 use Exporter 5.57 'import';
 our @EXPORT = qw/modulebuildtiny/;
@@ -187,7 +187,7 @@ App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
 
 =head1 VERSION
 
-version 0.002
+version 0.003
 
 =head1 DESCRIPTION
 
