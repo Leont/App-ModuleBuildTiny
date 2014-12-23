@@ -166,8 +166,8 @@ my %actions = (
 	distmeta => sub {
 		my %opts = @_;
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/merge=s/);
-		if (my $merge = $opts{merge}) {
-			my $json = do { local @ARGV=$merge; local $/; <> };
+		if ($opts{merge} and -r $opts{merge}) {
+			my $json = do { local @ARGV=$opts{merge}; local $/; <> };
 			my $meta = JSON::PP->new->decode($json);
 			$meta = CPAN::Meta::Merge->new(default_version => '2')->merge($opts{meta}, $meta);
 			$opts{meta} = CPAN::Meta->create($meta, { lazy_validation => 0 });
