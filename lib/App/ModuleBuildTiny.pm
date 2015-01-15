@@ -12,6 +12,7 @@ use Archive::Tar;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
+use CPAN::Meta::Merge;
 use ExtUtils::Manifest qw/maniskip/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
@@ -161,7 +162,19 @@ my %actions = (
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
 		}
-	}
+	},
+	distmeta => sub {
+		my %opts = @_;
+		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/merge=s/);
+		if ($opts{merge} and -r $opts{merge}) {
+			my $json = do { local @ARGV=$opts{merge}; local $/; <> };
+			my $meta = JSON::PP->new->decode($json);
+			$meta = CPAN::Meta::Merge->new(default_version => '2')->merge($opts{meta}, $meta);
+			$opts{meta} = CPAN::Meta->create($meta, { lazy_validation => 0 });
+		}
+		write_file('META.json', $opts{meta}->as_string);
+		write_file('META.yml', $opts{meta}->as_string({ version => 1.4 }));
+	},
 );
 
 sub dispatch {
