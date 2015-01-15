@@ -40,12 +40,12 @@ sub prereqs_for {
 sub get_files {
 	my %opts = @_;
 	my %files;
-	my $skip = maniskip;
+	my $maniskip = maniskip;
 	find({ 
 		no_chdir => 1,
 		wanted => sub {
 			my $name = abs2rel($_, '.');
-			$files{$name} = $name if -f $name and not $skip->($name);
+			$files{$name} = $name if -f $name and not $maniskip->($name) and not $opts{skip}{$name};
 		},
 	}, '.');
 	
@@ -56,13 +56,14 @@ sub get_files {
 	};
 	$files{'META.json'} ||= \$opts{meta}->as_string;
 	$files{'META.yml'} ||= \$opts{meta}->as_string({ version => 1.4 });
-	$files{MANIFEST} ||= \join "\n", keys %files;
+	$files{MANIFEST} ||= \join "\n", sort keys %files;
 
 	return \%files;
 }
 
 sub get_meta {
-	if (-e 'META.json' and -M 'META.json' < -M 'cpanfile') {
+	my %opts = @_;
+	if (not $opts{regenerate} and -e 'META.json' and -M 'META.json' < -M 'cpanfile') {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
@@ -93,13 +94,16 @@ sub get_meta {
 	}
 }
 
+my @generatable = qw/Build.PL META.json META.yml MANIFEST/;
 my $parser = Getopt::Long::Parser->new(config => [qw/require_order pass_through gnu_compat/]);
 
 my %actions = (
 	dist => sub {
 		my %opts    = @_;
 		my $arch    = Archive::Tar->new;
-		my $content = get_files(%opts);
+		my $meta    = get_meta();
+		my $name    = $meta->name . '-' . $meta->version;
+		my $content = get_files(%opts, meta => $meta);
 		for my $filename (keys %{$content}) {
 			if (ref $content->{$filename}) {
 				$arch->add_data($filename, ${ $content->{$filename} });
@@ -109,15 +113,17 @@ my %actions = (
 			}
 		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
-		printf "tar czf $opts{name}.tar.gz %s\n", join ' ', keys %{$content} if ($opts{verbose} || 0) > 0;
-		$arch->write("$opts{name}.tar.gz", COMPRESS_GZIP, $opts{name});
+		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($opts{verbose} || 0) > 0;
+		$arch->write("$name.tar.gz", COMPRESS_GZIP, $name);
 	},
 	distdir => sub {
-		my %opts = @_;
-		mkpath($opts{name}, $opts{verbose}, oct '755');
-		my $content = get_files(%opts);
+		my %opts    = @_;
+		my $meta    = get_meta();
+		my $dir     = $opts{dir} || $meta->name . '-' . $meta->version;
+		mkpath($dir, $opts{verbose}, oct '755');
+		my $content = get_files(%opts, meta => $meta);
 		for my $filename (keys %{$content}) {
-			my $target = catfile($opts{name}, $filename);
+			my $target = catfile($dir, $filename);
 			mkpath(dirname($target)) if not -d dirname($target);
 			if (ref $content->{$filename}) {
 				write_file($target, ${ $content->{$filename} });
@@ -129,34 +135,37 @@ my %actions = (
 	},
 	test => sub {
 		my %opts = (@_, author => 1);
-		my $name = tempdir(CLEANUP => 1);
-		dispatch('distdir', %opts, name => $name);
+		my $dir  = tempdir(CLEANUP => 1);
+		dispatch('distdir', %opts, dir => $dir);
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author!/);
 		my $env = join ' ', map { $opts{$_} ? uc($_) . '_TESTING=1' : () } qw/release author automated/;
-		system "cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test";
+		system "cd '$dir'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test";
 	},
 	run => sub {
 		my %opts = @_;
-		my $name = tempdir(CLEANUP => 1);
-		dispatch('distdir', %opts, name => $name);
+		my $dir  = tempdir(CLEANUP => 1);
+		dispatch('distdir', %opts, dir => $dir);
 		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
-		system "cd '$name'; '$Config{perlpath}' Build.PL; ./Build; $command";
+		system "cd '$dir'; '$Config{perlpath}' Build.PL; ./Build; $command";
 	},
 	listdeps => sub {
 		my %opts = @_;
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/json/);
+		my $meta = get_meta();
 		if (!$opts{json}) {
-			print "$_\n" for sort map { $opts{meta}->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+			print "$_\n" for sort map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
 		}
 		else {
-			my $hash = $opts{meta}->effective_prereqs->as_string_hash;
+			my $hash = $meta->effective_prereqs->as_string_hash;
 			print JSON::PP->new->ascii->pretty->encode($hash);
 		}
 	},
-	generate => sub {
+	regenerate => sub {
 		my %opts = @_;
-		my $content = get_files(%opts);
-		my @files = @{ $opts{arguments} };
+		my @files = @{ $opts{arguments} } ? @{ $opts{arguments} } : qw/Build.PL META.json META.yml MANIFEST/;
+
+		my $meta = get_meta(regenerate => scalar grep { /^META\./ } @files);
+		my $content = get_files(%opts, meta => $meta, skip => { map { $_ => 1 } @files });
 		for my $filename (@files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
@@ -175,8 +184,7 @@ sub modulebuildtiny {
 	my ($action, @arguments) = @_;
 	$parser->getoptionsfromarray(\@arguments, \my %opts, 'verbose!');
 	croak 'No action given' unless defined $action;
-	my $meta = get_meta();
-	return dispatch($action, %opts, arguments => \@arguments, meta => $meta, name => $meta->name . '-' . $meta->version);
+	return dispatch($action, %opts, arguments => \@arguments);
 }
 
 1;

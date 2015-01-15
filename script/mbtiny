@@ -58,4 +58,8 @@ Run the specified command in a build distribution. If no command is given, the C
 
 List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option option is given, it's printed as JSON instead.
 
+=item * regenerate <files>
+
+This regenerates the given files. If no files are given, it defaults to the four files it can generate: C<Build.PL>, C<MANIFEST>, C<META.json>, and C<META.yml>. You usually want to do this after bumping the version of a module, adding a dependency or adding a file.
+
 =back
