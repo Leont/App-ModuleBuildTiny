@@ -12,7 +12,7 @@ use Archive::Tar;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
-use ExtUtils::Manifest qw/maniskip/;
+use ExtUtils::Manifest qw/manifind maniskip/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Find qw/find/;
@@ -39,26 +39,20 @@ sub prereqs_for {
 
 sub get_files {
 	my %opts = @_;
-	my %files;
 	my $maniskip = maniskip;
-	find({ 
-		no_chdir => 1,
-		wanted => sub {
-			my $name = abs2rel($_, '.');
-			$files{$name} = $name if -f $name and not $maniskip->($name) and not $opts{skip}{$name};
-		},
-	}, '.');
+	my $files = manifind();
+	delete $files->{$_} for @{ $opts{skip} }, grep { $maniskip->($_) } keys %$files;
 	
-	$files{'Build.PL'} ||= do {
+	$files->{'Build.PL'} ||= do {
 		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
 		my $minimum_perl = prereqs_for($opts{meta}, qw/runtime requires perl 5.006/);
 		\"use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n";
 	};
-	$files{'META.json'} ||= \$opts{meta}->as_string;
-	$files{'META.yml'} ||= \$opts{meta}->as_string({ version => 1.4 });
-	$files{MANIFEST} ||= \join "\n", sort keys %files;
+	$files->{'META.json'} ||= \$opts{meta}->as_string;
+	$files->{'META.yml'} ||= \$opts{meta}->as_string({ version => 1.4 });
+	$files->{MANIFEST} ||= \join "\n", sort keys %$files;
 
-	return \%files;
+	return $files;
 }
 
 sub get_meta {
@@ -165,7 +159,7 @@ my %actions = (
 		my @files = @{ $opts{arguments} } ? @{ $opts{arguments} } : qw/Build.PL META.json META.yml MANIFEST/;
 
 		my $meta = get_meta(regenerate => scalar grep { /^META\./ } @files);
-		my $content = get_files(%opts, meta => $meta, skip => { map { $_ => 1 } @files });
+		my $content = get_files(%opts, meta => $meta, skip => \@files);
 		for my $filename (@files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
