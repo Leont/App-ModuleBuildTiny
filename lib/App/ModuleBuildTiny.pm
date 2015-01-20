@@ -8,21 +8,17 @@ our $VERSION = '0.003';
 use Exporter 5.57 'import';
 our @EXPORT = qw/modulebuildtiny/;
 
-use Archive::Tar;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
 use ExtUtils::Manifest qw/manifind maniskip/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
-use File::Find qw/find/;
 use File::Path qw/mkpath rmtree/;
-use File::Spec::Functions qw/catfile abs2rel rel2abs/;
+use File::Spec::Functions qw/catfile rel2abs/;
 use File::Temp qw/tempdir/;
 use Getopt::Long 2.39;
 use JSON::PP;
-use Module::CPANfile;
-use Module::Metadata;
 
 sub write_file {
 	my ($filename, $content) = @_;
@@ -65,12 +61,13 @@ sub get_meta {
 		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
 		my $filename = catfile('lib', split /-/, $distname) . '.pm';
 
+		require Module::Metadata;
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
 		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
 		my $version = $data->version($data->name)->stringify;
 
-		my $prereqs = -f 'cpanfile' ? Module::CPANfile->load('cpanfile')->prereq_specs : {};
+		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
 
 		my %metahash = (
@@ -94,6 +91,7 @@ my $parser = Getopt::Long::Parser->new(config => [qw/require_order pass_through 
 my %actions = (
 	dist => sub {
 		my %opts    = @_;
+		require Archive::Tar;
 		my $arch    = Archive::Tar->new;
 		my $meta    = get_meta();
 		my $name    = $meta->name . '-' . $meta->version;
@@ -108,7 +106,7 @@ my %actions = (
 		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($opts{verbose} || 0) > 0;
-		$arch->write("$name.tar.gz", COMPRESS_GZIP, $name);
+		$arch->write("$name.tar.gz", &Archive::Tar::COMPRESS_GZIP, $name);
 	},
 	distdir => sub {
 		my %opts    = @_;
