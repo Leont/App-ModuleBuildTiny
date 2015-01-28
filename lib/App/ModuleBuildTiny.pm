@@ -1,6 +1,6 @@
 package App::ModuleBuildTiny;
 
-use 5.008;
+use 5.010;
 use strict;
 use warnings FATAL => 'all';
 our $VERSION = '0.004';
@@ -43,14 +43,14 @@ sub get_files {
 		delete $files->{$_} for keys %{ $opts{regenerate} }, grep { $maniskip->($_) } keys %$files;
 	}
 	
-	$files->{'Build.PL'} ||= do {
+	$files->{'Build.PL'} //= do {
 		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
 		my $minimum_perl = prereqs_for($opts{meta}, qw/runtime requires perl 5.006/);
 		\"use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n";
 	};
-	$files->{'META.json'} ||= \$opts{meta}->as_string;
-	$files->{'META.yml'} ||= \$opts{meta}->as_string({ version => 1.4 });
-	$files->{MANIFEST} ||= \join "\n", sort keys %$files;
+	$files->{'META.json'} //= \$opts{meta}->as_string;
+	$files->{'META.yml'} //= \$opts{meta}->as_string({ version => 1.4 });
+	$files->{MANIFEST} //= \join "\n", sort keys %$files;
 
 	return $files;
 }

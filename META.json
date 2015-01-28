@@ -30,7 +30,7 @@
             "JSON::PP" : "0",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
-            "perl" : "5.008"
+            "perl" : "5.010"
          }
       },
       "test" : {
