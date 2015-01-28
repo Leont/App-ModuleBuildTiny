@@ -16,9 +16,7 @@ use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile rel2abs/;
-use File::Temp qw/tempdir/;
 use Getopt::Long 2.39;
-use JSON::PP;
 
 sub write_file {
 	my ($filename, $content) = @_;
@@ -143,7 +141,8 @@ my %actions = (
 	},
 	test => sub {
 		my %opts = (@_, author => 1);
-		my $dir  = tempdir(CLEANUP => 1);
+		require File::Temp;
+		my $dir  = File::Temp::tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, dir => $dir);
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author!/);
 		my $env = join ' ', map { $opts{$_} ? uc($_) . '_TESTING=1' : () } qw/release author automated/;
@@ -151,7 +150,8 @@ my %actions = (
 	},
 	run => sub {
 		my %opts = @_;
-		my $dir  = tempdir(CLEANUP => 1);
+		require File::Temp;
+		my $dir  = File::Temp::tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, dir => $dir);
 		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
 		system "cd '$dir'; '$Config{perlpath}' Build.PL; ./Build; $command";
@@ -165,6 +165,7 @@ my %actions = (
 		}
 		else {
 			my $hash = $meta->effective_prereqs->as_string_hash;
+			require JSON::PP;
 			print JSON::PP->new->ascii->pretty->encode($hash);
 		}
 	},
