@@ -81,6 +81,10 @@ sub get_meta {
 			prereqs        => $prereqs,
 			release_status => $version =~ /_|-TRIAL$/ ? 'testing' : 'stable',
 			generated_by   => "App::ModuleBuildTiny version $VERSION",
+			'meta-spec'    => {
+				version    => '2',
+				url        => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec'
+			},
 		};
 		if ($mergefile && -r $mergefile) {
 			my $extra = Parse::CPAN::Meta->load_file($mergefile);
