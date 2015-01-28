@@ -24,4 +24,6 @@ requires:
   Module::CPANfile: '0'
   Module::Metadata: '0'
   perl: '5.008'
+resources:
+  IRC: irc://irc.perl.org/#toolchain
 version: '0.003'

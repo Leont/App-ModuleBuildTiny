@@ -40,5 +40,8 @@
       }
    },
    "release_status" : "stable",
+   "resources" : {
+      "x_IRC" : "irc://irc.perl.org/#toolchain"
+   },
    "version" : "0.003"
 }
