@@ -46,11 +46,11 @@ sub get_files {
 	$files->{'Build.PL'} //= do {
 		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
 		my $minimum_perl = prereqs_for($opts{meta}, qw/runtime requires perl 5.006/);
-		\"use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n";
+		"use $minimum_perl;\nuse Module::Build::Tiny $minimum_mbt;\nBuild_PL();\n";
 	};
-	$files->{'META.json'} //= \$opts{meta}->as_string;
-	$files->{'META.yml'} //= \$opts{meta}->as_string({ version => 1.4 });
-	$files->{MANIFEST} //= \join "\n", sort keys %$files;
+	$files->{'META.json'} //= $opts{meta}->as_string;
+	$files->{'META.yml'} //= $opts{meta}->as_string({ version => 1.4 });
+	$files->{MANIFEST} //= join "\n", sort keys %$files;
 
 	return $files;
 }
@@ -112,8 +112,8 @@ my %actions = (
 		my $name    = $meta->name . '-' . $meta->version;
 		my $content = get_files(%opts, meta => $meta);
 		for my $filename (keys %{$content}) {
-			if (ref $content->{$filename}) {
-				$arch->add_data($filename, ${ $content->{$filename} });
+			if ($content->{$filename}) {
+				$arch->add_data($filename, $content->{$filename});
 			}
 			else {
 				$arch->add_files($filename);
@@ -132,8 +132,8 @@ my %actions = (
 		for my $filename (keys %{$content}) {
 			my $target = catfile($dir, $filename);
 			mkpath(dirname($target)) if not -d dirname($target);
-			if (ref $content->{$filename}) {
-				write_file($target, ${ $content->{$filename} });
+			if ($content->{$filename}) {
+				write_file($target, $content->{$filename});
 			}
 			else {
 				copy($filename, $target);
@@ -178,7 +178,7 @@ my %actions = (
 		my $content = get_files(%opts, meta => $meta, regenerate => \%files);
 		for my $filename (keys %files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
-			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
+			write_file($filename, $content->{$filename}) if $content->{$filename};
 		}
 	},
 );
