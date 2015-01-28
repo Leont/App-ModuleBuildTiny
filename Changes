@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.004     2014-01-28
           Handle generated files more sensibly
           Load modules more lazily
           Add support for mergefiles
