@@ -53,7 +53,8 @@ sub get_files {
 
 sub get_meta {
 	my %opts = @_;
-	if (not $opts{regenerate} and -e 'META.json' and -M 'META.json' < -M 'cpanfile') {
+	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
+	if (not $opts{regenerate} and -e 'META.json' and -M 'META.json' < -M 'cpanfile' and (not $mergefile or -M 'META.json' < -M $mergefile)) {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
@@ -70,7 +71,7 @@ sub get_meta {
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
 
-		my %metahash = (
+		my $metahash = {
 			name           => $distname,
 			version        => $version,
 			author         => $authors,
@@ -80,8 +81,13 @@ sub get_meta {
 			prereqs        => $prereqs,
 			release_status => $version =~ /_|-TRIAL$/ ? 'testing' : 'stable',
 			generated_by   => "App::ModuleBuildTiny version $VERSION",
-		);
-		return CPAN::Meta->create(\%metahash, { lazy_validation => 0 });
+		};
+		if ($mergefile && -r $mergefile) {
+			my $extra = Parse::CPAN::Meta->load_file($mergefile);
+			require CPAN::Meta::Merge;
+			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $extra);
+		}
+		return CPAN::Meta->create($metahash, { lazy_validation => 0 });
 	}
 }
 
@@ -162,7 +168,7 @@ my %actions = (
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
 		}
-	}
+	},
 );
 
 sub dispatch {
