@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          Handle generated files more sensibly
+
 0.003     2014-12-17
           Fix dependency on Getopt::Long 2.39
 
