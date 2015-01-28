@@ -11,7 +11,7 @@ our @EXPORT = qw/modulebuildtiny/;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
-use ExtUtils::Manifest qw/manifind maniskip/;
+use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
@@ -35,9 +35,15 @@ sub prereqs_for {
 
 sub get_files {
 	my %opts = @_;
-	my $maniskip = maniskip;
-	my $files = manifind();
-	delete $files->{$_} for @{ $opts{skip} }, grep { $maniskip->($_) } keys %$files;
+	my $files;
+	if (not $opts{regenerate}{MANIFEST} and -r 'MANIFEST') {
+		$files = maniread;
+	}
+	else {
+		my $maniskip = maniskip;
+		$files = manifind();
+		delete $files->{$_} for keys %{ $opts{regenerate} }, grep { $maniskip->($_) } keys %$files;
+	}
 	
 	$files->{'Build.PL'} ||= do {
 		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
@@ -54,7 +60,7 @@ sub get_files {
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
-	if (not $opts{regenerate} and -e 'META.json' and -M 'META.json' < -M 'cpanfile' and (not $mergefile or -M 'META.json' < -M $mergefile)) {
+	if (not $opts{regenerate}{'META.json'} and -e 'META.json' and -M 'META.json' < -M 'cpanfile' and (not $mergefile or -M 'META.json' < -M $mergefile)) {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
@@ -164,11 +170,11 @@ my %actions = (
 	},
 	regenerate => sub {
 		my %opts = @_;
-		my @files = @{ $opts{arguments} } ? @{ $opts{arguments} } : qw/Build.PL META.json META.yml MANIFEST/;
+		my %files = map { $_ => 1 } @{ $opts{arguments} } ? @{ $opts{arguments} } : qw/Build.PL META.json META.yml MANIFEST/;
 
-		my $meta = get_meta(regenerate => scalar grep { /^META\./ } @files);
-		my $content = get_files(%opts, meta => $meta, skip => \@files);
-		for my $filename (@files) {
+		my $meta = get_meta(regenerate => \%files);
+		my $content = get_files(%opts, meta => $meta, regenerate => \%files);
+		for my $filename (keys %files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, ${ $content->{$filename} }) if ref $content->{$filename};
 		}
