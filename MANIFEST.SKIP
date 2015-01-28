@@ -9,3 +9,4 @@ MYMETA\..*
 MANIFEST.bak
 ^Build$
 App-ModuleBuildTiny-*
+nytprof*
