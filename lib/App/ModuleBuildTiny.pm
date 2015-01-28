@@ -91,6 +91,7 @@ sub get_meta {
 			},
 		};
 		if ($mergefile && -r $mergefile) {
+			require Parse::CPAN::Meta;
 			my $extra = Parse::CPAN::Meta->load_file($mergefile);
 			require CPAN::Meta::Merge;
 			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $extra);

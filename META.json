@@ -23,6 +23,7 @@
          "requires" : {
             "Archive::Tar" : "0",
             "CPAN::Meta" : "0",
+            "CPAN::Meta::Merge" : "0",
             "Exporter" : "5.57",
             "File::Path" : "0",
             "File::Temp" : "0",
@@ -30,6 +31,7 @@
             "JSON::PP" : "0",
             "Module::CPANfile" : "0",
             "Module::Metadata" : "0",
+            "Parse::CPAN::Meta" : "0",
             "perl" : "5.010"
          }
       },
