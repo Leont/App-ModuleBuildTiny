@@ -43,6 +43,14 @@
    },
    "release_status" : "stable",
    "resources" : {
+      "bugtracker" : {
+         "web" : "https://github.com/Leont/app-modulebuildtiny/issues"
+      },
+      "repository" : {
+         "type" : "git",
+         "url" : "https://github.com/Leont/app-modulebuildtiny.git",
+         "web" : "https://github.com/Leont/app-modulebuildtiny/"
+      },
       "x_IRC" : "irc://irc.perl.org/#toolchain"
    },
    "version" : "0.004"

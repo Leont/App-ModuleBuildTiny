@@ -1,2 +1,8 @@
 resources:
+    repository:
+        type: git
+        url: https://github.com/Leont/app-modulebuildtiny.git
+        web: https://github.com/Leont/app-modulebuildtiny/
+    bugtracker:
+        web: https://github.com/Leont/app-modulebuildtiny/issues
     x_IRC: irc://irc.perl.org/#toolchain

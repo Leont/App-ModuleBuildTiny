@@ -28,4 +28,6 @@ requires:
   perl: '5.010'
 resources:
   IRC: irc://irc.perl.org/#toolchain
+  bugtracker: https://github.com/Leont/app-modulebuildtiny/issues
+  repository: https://github.com/Leont/app-modulebuildtiny.git
 version: '0.004'
