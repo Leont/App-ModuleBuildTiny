@@ -19,6 +19,11 @@
             "Module::Build::Tiny" : "0.039"
          }
       },
+      "develop" : {
+         "requires" : {
+            "App::ModuleBuildTiny" : "0.004"
+         }
+      },
       "runtime" : {
          "requires" : {
             "Archive::Tar" : "0",

@@ -74,6 +74,7 @@ sub get_meta {
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
+		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} ||= $VERSION;
 
 		my $metahash = {
 			name           => $distname,
