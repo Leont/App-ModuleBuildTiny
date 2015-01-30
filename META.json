@@ -4,7 +4,7 @@
       "Leon Timmermans <leont@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "App::ModuleBuildTiny version 0.004",
+   "generated_by" : "App::ModuleBuildTiny version 0.005",
    "license" : [
       "perl_5"
    ],
@@ -21,7 +21,7 @@
       },
       "develop" : {
          "requires" : {
-            "App::ModuleBuildTiny" : "0.004"
+            "App::ModuleBuildTiny" : "0.005"
          }
       },
       "runtime" : {
@@ -58,5 +58,5 @@
       },
       "x_IRC" : "irc://irc.perl.org/#toolchain"
    },
-   "version" : "0.004"
+   "version" : "0.005"
 }
