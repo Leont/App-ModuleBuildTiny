@@ -210,7 +210,7 @@ version 0.004
 
 =head1 DESCRIPTION
 
-App::ModuleBuild contains the implementation of the L<mbtiny> tool.
+App::ModuleBuildTiny contains the implementation of the L<mbtiny> tool.
 
 =head1 FUNCTIONS
 

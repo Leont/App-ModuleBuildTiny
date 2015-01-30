@@ -20,7 +20,43 @@ version 0.004
  mbtiny test --release
  mbtiny dist
 
-=head1 DESCRIPTION
+=head1 OVERVIEW
+
+Essentially C<mbtiny> does only one thing: generate the ancillary files of a distribution. To be more exact, it can generate:
+
+=over 4
+
+=item * Build.PL
+
+This contain the code needed to build the dist using L<Module::Build::Tiny|Module::Build::Tiny>.
+
+=item * MANIFEST
+
+This contains the list of files in this distribution, and optionally descriptions.
+
+=item * META.json
+
+The file containing most meta information about this distributions. Useful for both presenting information to the user as for installing the distribution.
+
+=item * META.yml
+
+This is the legacy meta file. Mainly useful for bootstrapping on CPAN clients too old to support META.json but recent enough to support configure_requires.
+
+=back
+
+The information for these files is gathered from various sources. The distribution name is taken from the local directory name. The version, abstract
+
+=head1 WORKFLOWS
+
+It supports two different workflows, which I call Feedback and Generator. In both cases, additional tools are used for various other authoring tasks such as perl-reversion, scan-prereqs-cpanfile and cpan-upload.
+
+=head2 Feedback
+
+In this workflow you're commiting the generated files to the filesystem/repository, in particular using the C<regenerate> command.
+
+=head2 Generator
+
+In this workflow the generated files aren't written back to the file system, instead they are generated on every mbtiny command.
 
 =head1 SUBCOMMANDS
 
