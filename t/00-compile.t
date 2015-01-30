@@ -25,7 +25,7 @@ find(
 );
 
 my @scripts;
-if ( -d 'bin' ) {
+if ( -d 'script' ) {
     find(
       sub {
         return unless -f;
@@ -39,7 +39,7 @@ if ( -d 'bin' ) {
         return unless $shebang =~ /^#!.*?\bperl\b\s*$/;
         push @scripts, $found;
       },
-      'bin',
+      'script',
     );
 }
 
