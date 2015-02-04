@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          Add creation comment to Build.PL
+
 0.005     2014-01-30
           Use existent MANIFEST if present
           Add develop dependency on App::ModuleBuildTiny to generated dists
