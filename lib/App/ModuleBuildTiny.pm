@@ -98,6 +98,7 @@ sub get_meta {
 			require CPAN::Meta::Merge;
 			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $extra);
 		}
+		$metahash->{provides} ||= Module::Metadata->provides(version => 2, dir => 'lib') if not $metahash->{no_index};
 		return CPAN::Meta->create($metahash, { lazy_validation => 0 });
 	}
 }

@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           Add creation comment to Build.PL
+          Add provides field to meta
 
 0.005     2014-01-30
           Use existent MANIFEST if present
