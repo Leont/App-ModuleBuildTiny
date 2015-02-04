@@ -10,3 +10,4 @@ MANIFEST.bak
 ^Build$
 App-ModuleBuildTiny-*
 nytprof*
+metamerge.*
