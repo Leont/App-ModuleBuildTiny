@@ -88,7 +88,15 @@ Run author tests. Defaults to true.
 
 =item * run
 
-Run the specified command in a build distribution. If no command is given, the C<$SHELL> is invoked.
+Run the specified command in a build distribution. It takes one boolean argument:
+
+=over 4
+
+=item * no-build
+
+This will cause mbtiny not to build the distribution before running the command.
+
+=back
 
 =item * listdeps
 

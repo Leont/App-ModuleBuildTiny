@@ -147,16 +147,19 @@ my %actions = (
 		my %opts = (@_, author => 1);
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author! automated!/);
 		$ENV{ uc($_) . '_TESTING' } = 1 for grep { $opts{$_} } qw/release author automated/;
-		dispatch('run', %opts, arguments => [ './Build', 'test' ]);
+		dispatch('run', %opts, arguments => [ './Build', 'test' ], parsed => 1);
 	},
 	run => sub {
-		my %opts = @_;
+		my %opts = (build => 1, @_);
+		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/build!/) if not $opts{parsed};
 		require File::Temp;
 		my $dir  = File::Temp::tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, dir => $dir);
 		chdir $dir;
-		system $Config{perlpath}, 'Build.PL';
-		system './Build', 'build';
+		if ($opts{build}) {
+			system $Config{perlpath}, 'Build.PL';
+			system './Build', 'build';
+		}
 		system @{ $opts{arguments} } ? @{ $opts{arguments} } : $ENV{SHELL};
 	},
 	listdeps => sub {
