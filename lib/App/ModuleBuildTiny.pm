@@ -151,6 +151,7 @@ my %actions = (
 	},
 	run => sub {
 		my %opts = (build => 1, @_);
+		croak "No arguments given to run" if not @{ $opts{arguments} };
 		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/build!/) if not $opts{parsed};
 		require File::Temp;
 		my $dir  = File::Temp::tempdir(CLEANUP => 1);
@@ -160,7 +161,11 @@ my %actions = (
 			system $Config{perlpath}, 'Build.PL';
 			system './Build', 'build';
 		}
-		system @{ $opts{arguments} } ? @{ $opts{arguments} } : $ENV{SHELL};
+		system @{ $opts{arguments} };
+	},
+	shell => sub {
+		my %opts = (@_);
+		dispatch('run', %opts, arguments => [ $ENV{SHELL} ]);
 	},
 	listdeps => sub {
 		my %opts = @_;

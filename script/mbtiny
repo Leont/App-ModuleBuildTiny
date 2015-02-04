@@ -98,6 +98,10 @@ This will cause mbtiny not to build the distribution before running the command.
 
 =back
 
+=item * shell
+
+Runs the C<$SHELL>, this is short for C<mbtiny run $SHELL>.
+
 =item * listdeps
 
 List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option option is given, it's printed as JSON instead.
