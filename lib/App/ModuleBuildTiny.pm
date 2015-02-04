@@ -145,20 +145,19 @@ my %actions = (
 	},
 	test => sub {
 		my %opts = (@_, author => 1);
-		require File::Temp;
-		my $dir  = File::Temp::tempdir(CLEANUP => 1);
-		dispatch('distdir', %opts, dir => $dir);
-		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author!/);
-		my $env = join ' ', map { $opts{$_} ? uc($_) . '_TESTING=1' : () } qw/release author automated/;
-		system "cd '$dir'; '$Config{perlpath}' Build.PL; ./Build; $env ./Build test";
+		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author! automated!/);
+		$ENV{ uc($_) . '_TESTING' } = 1 for grep { $opts{$_} } qw/release author automated/;
+		dispatch('run', %opts, arguments => [ './Build', 'test' ]);
 	},
 	run => sub {
 		my %opts = @_;
 		require File::Temp;
 		my $dir  = File::Temp::tempdir(CLEANUP => 1);
 		dispatch('distdir', %opts, dir => $dir);
-		my $command = @{ $opts{arguments} } ? join ' ', @{ $opts{arguments} } : $ENV{SHELL};
-		system "cd '$dir'; '$Config{perlpath}' Build.PL; ./Build; $command";
+		chdir $dir;
+		system $Config{perlpath}, 'Build.PL';
+		system './Build', 'build';
+		system @{ $opts{arguments} } ? @{ $opts{arguments} } : $ENV{SHELL};
 	},
 	listdeps => sub {
 		my %opts = @_;
