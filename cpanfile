@@ -4,7 +4,7 @@ requires 'CPAN::Meta::Merge';
 requires 'Exporter', '5.57';
 requires 'File::Path';
 requires 'File::Temp';
-requires 'Getopt::Long', '2.39';
+requires 'Getopt::Long', '2.36';
 requires 'JSON::PP';
 requires 'Module::CPANfile';
 requires 'Module::Metadata';

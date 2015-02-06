@@ -16,7 +16,7 @@ use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile rel2abs/;
-use Getopt::Long 2.39;
+use Getopt::Long 2.36 'GetOptionsFromArray';
 
 sub write_file {
 	my ($filename, $content) = @_;
@@ -104,16 +104,48 @@ sub get_meta {
 }
 
 my @generatable = qw/Build.PL META.json META.yml MANIFEST/;
-my $parser = Getopt::Long::Parser->new(config => [qw/require_order pass_through gnu_compat/]);
+Getopt::Long::Configure(qw/require_order pass_through gnu_compat/);
+
+sub distdir {
+	my %opts    = @_;
+	my $meta    = get_meta();
+	my $dir     = $opts{dir} || $meta->name . '-' . $meta->version;
+	mkpath($dir, $opts{verbose}, oct '755');
+	my $content = get_files(%opts, meta => $meta);
+	for my $filename (keys %{$content}) {
+		my $target = catfile($dir, $filename);
+		mkpath(dirname($target)) if not -d dirname($target);
+		if ($content->{$filename}) {
+			write_file($target, $content->{$filename});
+		}
+		else {
+			copy($filename, $target);
+		}
+	}
+}
+
+sub run {
+	my %opts = @_;
+	require File::Temp;
+	my $dir  = File::Temp::tempdir(CLEANUP => 1);
+	distdir(%opts, dir => $dir);
+	chdir $dir;
+	if ($opts{build}) {
+		system $Config{perlpath}, 'Build.PL';
+		system './Build', 'build';
+	}
+	system @{ $opts{command} };
+}
 
 my %actions = (
 	dist => sub {
-		my %opts    = @_;
+		my @arguments = @_;
+		GetOptionsFromArray(\@arguments, 'verbose!' => \my $verbose);
 		require Archive::Tar;
 		my $arch    = Archive::Tar->new;
 		my $meta    = get_meta();
 		my $name    = $meta->name . '-' . $meta->version;
-		my $content = get_files(%opts, meta => $meta);
+		my $content = get_files(meta => $meta);
 		for my $filename (keys %{$content}) {
 			if ($content->{$filename}) {
 				$arch->add_data($filename, $content->{$filename});
@@ -123,55 +155,37 @@ my %actions = (
 			}
 		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
-		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($opts{verbose} || 0) > 0;
+		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($verbose || 0) > 0;
 		$arch->write("$name.tar.gz", &Archive::Tar::COMPRESS_GZIP, $name);
 	},
 	distdir => sub {
-		my %opts    = @_;
-		my $meta    = get_meta();
-		my $dir     = $opts{dir} || $meta->name . '-' . $meta->version;
-		mkpath($dir, $opts{verbose}, oct '755');
-		my $content = get_files(%opts, meta => $meta);
-		for my $filename (keys %{$content}) {
-			my $target = catfile($dir, $filename);
-			mkpath(dirname($target)) if not -d dirname($target);
-			if ($content->{$filename}) {
-				write_file($target, $content->{$filename});
-			}
-			else {
-				copy($filename, $target);
-			}
-		}
+		my @arguments = @_;
+		GetOptionsFromArray(\@arguments, 'verbose!' => \my $verbose);
+		distdir(verbose => $verbose);
 	},
 	test => sub {
-		my %opts = (@_, author => 1);
-		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/release! author! automated!/);
+		my @arguments = @_;
+		my %opts = (author => 1);
+		GetOptionsFromArray(\@arguments, \%opts, qw/release! author! automated!/);
 		$ENV{ uc($_) . '_TESTING' } = 1 for grep { $opts{$_} } qw/release author automated/;
-		dispatch('run', %opts, arguments => [ './Build', 'test' ], parsed => 1);
+		run(command => [ './Build', 'test' ], build => 1);
 	},
 	run => sub {
-		my %opts = (build => 1, @_);
-		croak "No arguments given to run" if not @{ $opts{arguments} };
-		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/build!/) if not $opts{parsed};
-		require File::Temp;
-		my $dir  = File::Temp::tempdir(CLEANUP => 1);
-		dispatch('distdir', %opts, dir => $dir);
-		chdir $dir;
-		if ($opts{build}) {
-			system $Config{perlpath}, 'Build.PL';
-			system './Build', 'build';
-		}
-		system @{ $opts{arguments} };
+		my @arguments = @_;
+		croak "No arguments given to run" if not @arguments;
+		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1));
+		run(command => \@arguments, build => $build);
 	},
 	shell => sub {
-		my %opts = (@_);
-		dispatch('run', %opts, arguments => [ $ENV{SHELL} ]);
+		my @arguments = @_;
+		GetOptionsFromArray(\@arguments, 'build!' => \my $build);
+		run(command => [ $ENV{SHELL} ]);
 	},
 	listdeps => sub {
-		my %opts = @_;
-		$parser->getoptionsfromarray($opts{arguments}, \%opts, qw/json/);
+		my @arguments = @_;
+		GetOptionsFromArray(\@arguments, 'json' => \my $json);
 		my $meta = get_meta();
-		if (!$opts{json}) {
+		if (!$json) {
 			print "$_\n" for sort map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
 		}
 		else {
@@ -181,11 +195,11 @@ my %actions = (
 		}
 	},
 	regenerate => sub {
-		my %opts = @_;
-		my %files = map { $_ => 1 } @{ $opts{arguments} } ? @{ $opts{arguments} } : qw/Build.PL META.json META.yml MANIFEST/;
+		my @arguments = @_;
+		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST/;
 
 		my $meta = get_meta(regenerate => \%files);
-		my $content = get_files(%opts, meta => $meta, regenerate => \%files);
+		my $content = get_files(meta => $meta, regenerate => \%files);
 		for my $filename (keys %files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_file($filename, $content->{$filename}) if $content->{$filename};
@@ -193,18 +207,12 @@ my %actions = (
 	},
 );
 
-sub dispatch {
-	my ($action, %options) = @_;
-	my $call = $actions{$action};
-	croak "No such action '$action' known\n" if not $call;
-	return $call->(%options);
-}
-
 sub modulebuildtiny {
 	my ($action, @arguments) = @_;
-	$parser->getoptionsfromarray(\@arguments, \my %opts, 'verbose!');
 	croak 'No action given' unless defined $action;
-	return dispatch($action, %opts, arguments => \@arguments);
+	my $call = $actions{$action};
+	croak "No such action '$action' known\n" if not $call;
+	return $call->(@arguments);
 }
 
 1;
@@ -227,7 +235,7 @@ App::ModuleBuildTiny contains the implementation of the L<mbtiny> tool.
 
 =item * modulebuildtiny($action, @arguments)
 
-This function runs a modulebuildtiny command. It expects at least one argument: the action. It may receive additional ARGV style options, the only one defined for all actions is C<verbose>.
+This function runs a modulebuildtiny command. It expects at least one argument: the action. It may receive additional ARGV style options dependent on the command.
 
 The actions are documented in the L<mbtiny> documentation.
 
