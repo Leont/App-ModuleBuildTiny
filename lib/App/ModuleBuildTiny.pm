@@ -15,16 +15,9 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
+use File::Slurper qw/write_text/;
 use File::Spec::Functions qw/catfile rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
-
-sub write_file {
-	my ($filename, $content) = @_;
-	open my $fh, '>:raw', $filename or die "Could not open $filename: $!\n";
-	print $fh $content or croak "Couldn't write to $filename: $!";
-	close $fh or croak "Couldn't write to $filename: $!";
-	return;
-}
 
 sub prereqs_for {
 	my ($meta, $phase, $type, $module, $default) = @_;
@@ -116,7 +109,7 @@ sub distdir {
 		my $target = catfile($dir, $filename);
 		mkpath(dirname($target)) if not -d dirname($target);
 		if ($content->{$filename}) {
-			write_file($target, $content->{$filename});
+			write_text($target, $content->{$filename});
 		}
 		else {
 			copy($filename, $target);
@@ -202,7 +195,7 @@ my %actions = (
 		my $content = get_files(meta => $meta, regenerate => \%files);
 		for my $filename (keys %files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
-			write_file($filename, $content->{$filename}) if $content->{$filename};
+			write_text($filename, $content->{$filename}) if $content->{$filename};
 		}
 	},
 );

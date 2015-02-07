@@ -3,6 +3,7 @@ requires 'CPAN::Meta';
 requires 'CPAN::Meta::Merge';
 requires 'Exporter', '5.57';
 requires 'File::Path';
+requires 'File::Slurper';
 requires 'File::Temp';
 requires 'Getopt::Long', '2.36';
 requires 'JSON::PP';
