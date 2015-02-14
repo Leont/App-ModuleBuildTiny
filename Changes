@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          Add lib and script paths to appropriate environmental variables
+
 0.006     2015-02-14
           Add creation comment to Build.PL
           Add provides field to meta

@@ -16,10 +16,10 @@ use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Slurper qw/write_text/;
-use File::Spec::Functions qw/catfile rel2abs/;
+use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 
-use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL/;
+use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL @PERL5LIB @PATH/;
 
 sub prereqs_for {
 	my ($meta, $phase, $type, $module, $default) = @_;
@@ -128,6 +128,8 @@ sub run {
 	if ($opts{build}) {
 		system $Config{perlpath}, 'Build.PL';
 		system './Build', 'build';
+		unshift @PERL5LIB, map { rel2abs(catdir('blib', $_)) } 'arch', 'lib';
+		unshift @PATH, rel2abs(catdir('blib', 'script'));
 	}
 	system @{ $opts{command} };
 }
@@ -173,7 +175,7 @@ my %actions = (
 	shell => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'build!' => \my $build);
-		run(command => [ $SHELL ]);
+		run(command => [ $SHELL ], build => $build);
 	},
 	listdeps => sub {
 		my @arguments = @_;
