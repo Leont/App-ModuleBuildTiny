@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.006     2015-02-14
           Add creation comment to Build.PL
           Add provides field to meta
           Add --no-build option to run
