@@ -67,6 +67,22 @@ sub get_meta {
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
 		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
 		my $version = $data->version($data->name)->stringify;
+		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
+
+		my $license;
+		for my $license_section (@license_sections) {
+			require Software::LicenseUtils;
+			my $content = "=head1 LICENSE\n" . $data->pod($license_section);
+			my @guess = Software::LicenseUtils->guess_license_from_pod($content);
+			next if not @guess;
+			croak "Couldn't parse license from $license_section: @guess" if @guess != 1;
+			my $class = $guess[0];
+			my ($year) = $data->pod($license_section) =~ /.*? copyright .*? ([\d\-]+)/;
+			require Module::Runtime;
+			Module::Runtime::require_module($class);
+			$license = $class->new({holder => $authors, year => $year});
+		}
+		croak 'No license found' if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
@@ -78,7 +94,7 @@ sub get_meta {
 			author         => $authors,
 			abstract       => $abstract,
 			dynamic_config => 0,
-			license        => ['perl_5'],
+			license        => [ $license->meta2_name ],
 			prereqs        => $prereqs,
 			release_status => $version =~ /_|-TRIAL$/ ? 'testing' : 'stable',
 			generated_by   => "App::ModuleBuildTiny version $VERSION",

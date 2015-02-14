@@ -29,7 +29,9 @@ requires:
   JSON::PP: '0'
   Module::CPANfile: '0'
   Module::Metadata: '0'
+  Module::Runtime: '0'
   Parse::CPAN::Meta: '0'
+  Software::LicenseUtils: '0'
   perl: '5.010'
 resources:
   IRC: irc://irc.perl.org/#toolchain
