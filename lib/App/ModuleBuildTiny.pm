@@ -198,7 +198,7 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, 'json' => \my $json);
 		my $meta = get_meta();
 		if (!$json) {
-			print "$_\n" for sort map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+			say for sort map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
 		}
 		else {
 			my $hash = $meta->effective_prereqs->as_string_hash;
