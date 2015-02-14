@@ -5,11 +5,11 @@ Revision history for App-ModuleBuildTiny
           Add --no-build option to run
           Split shell out of run
 
-0.005     2014-01-30
+0.005     2015-01-30
           Use existent MANIFEST if present
           Add develop dependency on App::ModuleBuildTiny to generated dists
 
-0.004     2014-01-28
+0.004     2015-01-28
           Handle generated files more sensibly
           Load modules more lazily
           Add support for mergefiles
