@@ -19,6 +19,8 @@ use File::Slurper qw/write_text/;
 use File::Spec::Functions qw/catfile rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 
+use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL/;
+
 sub prereqs_for {
 	my ($meta, $phase, $type, $module, $default) = @_;
 	return $meta->effective_prereqs->requirements_for($phase, $type)->requirements_for_module($module) || $default || 0;
@@ -158,9 +160,8 @@ my %actions = (
 	},
 	test => sub {
 		my @arguments = @_;
-		my %opts = (author => 1);
-		GetOptionsFromArray(\@arguments, \%opts, qw/release! author! automated!/);
-		$ENV{ uc($_) . '_TESTING' } = 1 for grep { $opts{$_} } qw/release author automated/;
+		$AUTHOR_TESTING = 1;
+		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING);
 		run(command => [ './Build', 'test' ], build => 1);
 	},
 	run => sub {
@@ -172,7 +173,7 @@ my %actions = (
 	shell => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'build!' => \my $build);
-		run(command => [ $ENV{SHELL} ]);
+		run(command => [ $SHELL ]);
 	},
 	listdeps => sub {
 		my @arguments = @_;
