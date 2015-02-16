@@ -29,6 +29,7 @@
             "Archive::Tar" : "0",
             "CPAN::Meta" : "0",
             "CPAN::Meta::Merge" : "0",
+            "CPAN::Meta::Prereqs::Filter" : "0",
             "Exporter" : "5.57",
             "File::Path" : "0",
             "File::Slurper" : "0",

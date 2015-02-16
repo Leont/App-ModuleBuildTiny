@@ -1,6 +1,7 @@
 requires 'Archive::Tar';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Merge';
+requires 'CPAN::Meta::Prereqs::Filter';
 requires 'Exporter', '5.57';
 requires 'File::Path';
 requires 'File::Slurper';

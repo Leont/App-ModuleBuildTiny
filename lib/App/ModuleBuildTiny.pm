@@ -195,15 +195,18 @@ my %actions = (
 	},
 	listdeps => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, 'json' => \my $json);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s/);
 		my $meta = get_meta();
-		if (!$json) {
-			say for sort map { $meta->effective_prereqs->requirements_for($_, 'requires')->required_modules } qw/configure build test runtime/;
+
+		require CPAN::Meta::Prereqs::Filter;
+		my $prereqs = CPAN::Meta::Prereqs::Filter::filter_prereqs($meta->effective_prereqs, %opts, sanatize => 1);
+
+		if (!$opts{json}) {
+			say for sort $prereqs->merged_requirements([ qw/configure build test runtime/ ])->required_modules;
 		}
 		else {
-			my $hash = $meta->effective_prereqs->as_string_hash;
 			require JSON::PP;
-			print JSON::PP->new->ascii->pretty->encode($hash);
+			print JSON::PP->new->ascii->pretty->encode($prereqs->as_string_hash);
 		}
 	},
 	regenerate => sub {
