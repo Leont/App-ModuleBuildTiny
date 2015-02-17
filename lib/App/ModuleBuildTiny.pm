@@ -195,14 +195,26 @@ my %actions = (
 	},
 	listdeps => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/);
 		my $meta = get_meta();
 
 		require CPAN::Meta::Prereqs::Filter;
 		my $prereqs = CPAN::Meta::Prereqs::Filter::filter_prereqs($meta->effective_prereqs, %opts, sanatize => 1);
 
 		if (!$opts{json}) {
-			say for sort $prereqs->merged_requirements([ qw/configure build test runtime/ ])->required_modules;
+			my @phases = qw/build test configure runtime/;
+			push @phases, 'develop' if $opts{author};
+
+			my $reqs = $prereqs->merged_requirements(\@phases);
+			$reqs->clear_requirement('perl');
+
+			my @modules = sort { lc $a cmp lc $b } $reqs->required_modules;
+			if ($opts{versions}) {
+				say "$_ = ", $reqs->requirements_for_module($_) for @modules;
+			}
+			else {
+				say for @modules;
+			}
 		}
 		else {
 			require JSON::PP;
