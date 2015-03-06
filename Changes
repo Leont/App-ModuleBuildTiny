@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.007     2015-03-06
           Add lib and script paths to appropriate environmental variables
           Determine license from POD
 
