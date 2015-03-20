@@ -2,7 +2,7 @@ package App::ModuleBuildTiny;
 
 use 5.010;
 use strict;
-use warnings FATAL => 'all';
+use warnings;
 our $VERSION = '0.007';
 
 use Exporter 5.57 'import';
