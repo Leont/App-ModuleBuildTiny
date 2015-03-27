@@ -135,6 +135,8 @@ sub distdir {
 	}
 }
 
+my $Build = $^O eq 'MSWin32' ? 'Build' : './Build';
+
 sub run {
 	my %opts = @_;
 	require File::Temp;
@@ -143,7 +145,7 @@ sub run {
 	chdir $dir;
 	if ($opts{build}) {
 		system $Config{perlpath}, 'Build.PL';
-		system './Build', 'build';
+		system $Build, 'build';
 		unshift @PERL5LIB, map { rel2abs(catdir('blib', $_)) } 'arch', 'lib';
 		unshift @PATH, rel2abs(catdir('blib', 'script'));
 	}
@@ -180,7 +182,7 @@ my %actions = (
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING);
-		run(command => [ './Build', 'test' ], build => 1);
+		run(command => [ $Build, 'test' ], build => 1);
 	},
 	run => sub {
 		my @arguments = @_;
