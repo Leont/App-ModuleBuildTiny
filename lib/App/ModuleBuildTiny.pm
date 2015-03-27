@@ -51,10 +51,19 @@ sub get_files {
 	return $files;
 }
 
+sub uptodate {
+	my ($destination, @source) = @_;
+	return if not -e $destination;
+	for my $source (grep { defined && -e } @source) {
+		return if -M $destination < -M $source;
+	}
+	return 1;
+}
+
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
-	if (not $opts{regenerate}{'META.json'} and -e 'META.json' and -M 'META.json' < -M 'cpanfile' and (not $mergefile or -M 'META.json' < -M $mergefile)) {
+	if (not $opts{regenerate}{'META.json'} and uptodate('META.json', 'cpanfile', $mergefile)) {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
