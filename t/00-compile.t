@@ -1,65 +1,72 @@
-#!perl
-
+use 5.006;
 use strict;
 use warnings;
 
 use Test::More;
 
+plan tests => 3;
 
-
-use File::Find;
-use File::Temp qw{ tempdir };
-
-my @modules;
-find(
-  sub {
-    return if $File::Find::name !~ /\.pm\z/;
-    my $found = $File::Find::name;
-    $found =~ s{^lib/}{};
-    $found =~ s{[/\\]}{::}g;
-    $found =~ s/\.pm$//;
-    # nothing to skip
-    push @modules, $found;
-  },
-  'lib',
+my @module_files = (
+	'lib/App/ModuleBuildTiny.pm',
 );
 
-my @scripts;
-if ( -d 'script' ) {
-    find(
-      sub {
-        return unless -f;
-        my $found = $File::Find::name;
-        # nothing to skip
-        open my $FH, '<', $_ or do {
-          note( "Unable to open $found in ( $! ), skipping" );
-          return;
-        };
-        my $shebang = <$FH>;
-        return unless $shebang =~ /^#!.*?\bperl\b\s*$/;
-        push @scripts, $found;
-      },
-      'script',
-    );
-}
+my @scripts = (
+    'script/mbtiny',
+);
 
-my $plan = scalar(@modules) + scalar(@scripts);
-$plan ? (plan tests => $plan) : (plan skip_all => "no tests to run");
+# no fake home requested
 
+my $inc_switch = -d 'blib' ? '-Mblib' : '-Ilib';
+
+use File::Spec;
+use IPC::Open3;
+use IO::Handle;
+
+open my $stdin, '<', File::Spec->devnull or die "can't open devnull: $!";
+
+my @warnings;
+for my $lib (@module_files)
 {
-    # fake home for cpan-testers
-    # no fake requested ## local $ENV{HOME} = tempdir( CLEANUP => 1 );
+    # see L<perlfaq8/How can I capture STDERR from an external command?>
+    my $stderr = IO::Handle->new;
 
-    like( qx{ $^X -Ilib -e "require $_; print '$_ ok'" }, qr/^\s*$_ ok/s, "$_ loaded ok" )
-        for sort @modules;
+    my $pid = open3($stdin, '>&STDERR', $stderr, $^X, $inc_switch, '-e', "require q[$lib]");
+    binmode $stderr, ':crlf' if $^O eq 'MSWin32';
+    my @_warnings = <$stderr>;
+    waitpid($pid, 0);
+    is($?, 0, "$lib loaded ok");
 
-    SKIP: {
-        eval "use Test::Script 1.05; 1;";
-        skip "Test::Script needed to test script compilation", scalar(@scripts) if $@;
-        foreach my $file ( @scripts ) {
-            my $script = $file;
-            $script =~ s!.*/!!;
-            script_compiles( $file, "$script script compiles" );
-        }
+    if (@_warnings)
+    {
+        warn @_warnings;
+        push @warnings, @_warnings;
     }
 }
+
+foreach my $file (@scripts)
+{ SKIP: {
+    open my $fh, '<', $file or warn("Unable to open $file: $!"), next;
+    my $line = <$fh>;
+
+    close $fh and skip("$file isn't perl", 1) unless $line =~ /^#!\s*(?:\S*perl\S*)((?:\s+-\w*)*)(?:\s*#.*)?$/;
+    my @flags = $1 ? split(' ', $1) : ();
+
+    my $stderr = IO::Handle->new;
+
+    my $pid = open3($stdin, '>&STDERR', $stderr, $^X, $inc_switch, @flags, '-c', $file);
+    binmode $stderr, ':crlf' if $^O eq 'MSWin32';
+    my @_warnings = <$stderr>;
+    waitpid($pid, 0);
+    is($?, 0, "$file compiled ok");
+
+   # in older perls, -c output is simply the file portion of the path being tested
+    if (@_warnings = grep { !/\bsyntax OK$/ }
+        grep { chomp; $_ ne (File::Spec->splitpath($file))[2] } @_warnings)
+    {
+        warn @_warnings;
+        push @warnings, @_warnings;
+    }
+} }
+
+is(scalar(@warnings), 0, 'no warnings found')
+    or diag 'got warnings: ', ( Test::More->can('explain') ? Test::More::explain(\@warnings) : join("\n", '', @warnings) );
