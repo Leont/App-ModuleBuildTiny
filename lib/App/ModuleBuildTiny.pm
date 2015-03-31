@@ -60,6 +60,30 @@ sub uptodate {
 	return 1;
 }
 
+sub find {
+	my ($re, @dir) = @_;
+	my $ret;
+	File::Find::find(sub { $ret++ if /$re/ }, @dir);
+	return $ret;
+}
+
+sub mbt_version {
+	my $distname = shift;
+	if (find(qr/\.PL$/, 'lib')) {
+		return '0.039';
+	}
+	elsif (find(qr/\.xs$/, 'lib')) {
+		return '0.036';
+	}
+	elsif (not $distname =~ tr/-//) {
+		return '0.019';
+	}
+	elsif (-d 'share') {
+		return '0.014';
+	}
+	return '0.007';
+}
+
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
@@ -94,7 +118,7 @@ sub get_meta {
 		croak 'No license found' if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
-		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= Module::Metadata->new_from_module('Module::Build::Tiny')->version->stringify;
+		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= mbt_version($distname);
 		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} ||= $VERSION;
 
 		my $metahash = {

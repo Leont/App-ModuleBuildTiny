@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          Use more conservative MBT version dependency
+
 0.008     2015-03-28
           Run Build correctly on Windows
           Check METAfile dependencies more thoroughly
