@@ -17,11 +17,16 @@ provides:
   App::ModuleBuildTiny:
     file: lib/App/ModuleBuildTiny.pm
     version: '0.018'
+  App::ModuleBuildTiny::Mint:
+    file: lib/App/ModuleBuildTiny/Mint.pm
+    version: '0.018'
 requires:
   Archive::Tar: '0'
   CPAN::Meta: '0'
   CPAN::Meta::Merge: '0'
   CPAN::Meta::Prereqs::Filter: '0'
+  Data::Section::Simple: '0'
+  Encode: '0'
   Exporter: '5.57'
   File::Path: '0'
   File::Slurper: '0'
@@ -33,6 +38,7 @@ requires:
   Module::Runtime: '0'
   Parse::CPAN::Meta: '0'
   Software::LicenseUtils: '0'
+  Text::Template: '0'
   perl: '5.010'
 resources:
   IRC: irc://irc.perl.org/#toolchain

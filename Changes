@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Added mint command
+
 0.018     2016-10-17
           - Always follow symlinks when creating a tarball
           - Include terminating newline in MANIFEST
