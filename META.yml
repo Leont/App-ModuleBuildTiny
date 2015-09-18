@@ -7,7 +7,7 @@ build_requires:
 configure_requires:
   Module::Build::Tiny: '0.039'
 dynamic_config: 0
-generated_by: 'App::ModuleBuildTiny version 0.009, CPAN::Meta::Converter version 2.143240'
+generated_by: 'App::ModuleBuildTiny version 0.010, CPAN::Meta::Converter version 2.143240'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,7 +16,7 @@ name: App-ModuleBuildTiny
 provides:
   App::ModuleBuildTiny:
     file: lib/App/ModuleBuildTiny.pm
-    version: '0.009'
+    version: '0.010'
 requires:
   Archive::Tar: '0'
   CPAN::Meta: '0'
@@ -38,4 +38,4 @@ resources:
   IRC: irc://irc.perl.org/#toolchain
   bugtracker: https://github.com/Leont/app-modulebuildtiny/issues
   repository: https://github.com/Leont/app-modulebuildtiny.git
-version: '0.009'
+version: '0.010'
