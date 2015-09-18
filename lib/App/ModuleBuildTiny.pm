@@ -309,11 +309,21 @@ The actions are documented in the L<mbtiny> documentation.
 
 =over 4
 
-=item * L<scan_prereqs_cpanfile|scan_prereqs_cpanfile>
+=item * L<scan-prereqs-cpanfile|scan-prereqs-cpanfile>
+
+A tool to automatically generate a f<cpanfile> for you.
 
 =item * L<cpan-upload|cpan-upload>
 
+A program that facilitates upload the tarball as produced by C<mbtiny>.
+
 =item * L<perl-reversion|perl-reversion>
+
+A tool to bump the version in your modules.
+
+=item * L<perl-bump-version|perl-bump-version>
+
+An alternative tool to bump the version in your modules
 
 =back
 
@@ -323,7 +333,11 @@ The actions are documented in the L<mbtiny> documentation.
 
 =item * L<Dist::Zilla|Dist::Zilla>
 
+An extremely powerful but somewhat heavy authoring tool.
+
 =item * L<Minilla|Minilla>
+
+A more minimalistic but still somewhat customizable authoring tool.
 
 =back
 
