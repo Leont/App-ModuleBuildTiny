@@ -68,20 +68,13 @@ sub find {
 }
 
 sub mbt_version {
-	my $distname = shift;
 	if (find(qr/\.PL$/, 'lib')) {
 		return '0.039';
 	}
 	elsif (find(qr/\.xs$/, 'lib')) {
 		return '0.036';
 	}
-	elsif (not $distname =~ tr/-//) {
-		return '0.019';
-	}
-	elsif (-d 'share') {
-		return '0.014';
-	}
-	return '0.007';
+	return '0.034';
 }
 
 sub get_meta {
@@ -118,7 +111,7 @@ sub get_meta {
 		croak 'No license found' if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
-		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= mbt_version($distname);
+		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= mbt_version();
 		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} ||= $VERSION;
 
 		my $metahash = {
