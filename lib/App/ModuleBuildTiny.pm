@@ -77,6 +77,23 @@ sub mbt_version {
 	return '0.034';
 }
 
+sub load_mergedata {
+	my $mergefile = shift;
+	if (defined $mergefile and -r $mergefile) {
+		require Parse::CPAN::Meta;
+		return Parse::CPAN::Meta->load_file($mergefile);
+	}
+	return;
+}
+
+sub distname {
+	my $extra = shift;
+	return delete $extra->{name} if defined $extra->{name};
+	my $distname = basename(rel2abs('.'));
+	$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
+	return $distname;
+}
+
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
@@ -84,8 +101,8 @@ sub get_meta {
 		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
 	}
 	else {
-		my $distname = basename(rel2abs('.'));
-		$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
+		my $mergedata = load_mergedata($mergefile) || {};
+		my $distname = distname($mergedata);
 		my $filename = catfile('lib', split /-/, $distname) . '.pm';
 
 		require Module::Metadata;
@@ -129,11 +146,9 @@ sub get_meta {
 				url        => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec'
 			},
 		};
-		if ($mergefile && -r $mergefile) {
-			require Parse::CPAN::Meta;
-			my $extra = Parse::CPAN::Meta->load_file($mergefile);
+		if (%{$mergedata}) {
 			require CPAN::Meta::Merge;
-			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $extra);
+			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $mergedata);
 		}
 		$metahash->{provides} ||= Module::Metadata->provides(version => 2, dir => 'lib') if not $metahash->{no_index};
 		return CPAN::Meta->create($metahash, { lazy_validation => 0 });
