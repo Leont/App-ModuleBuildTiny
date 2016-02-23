@@ -1,5 +1,12 @@
 Revision history for App-ModuleBuildTiny
 
+0.011     2016-02-23
+          - Make conservative version logic slightly less conservative
+          - Allow setting the distribution name in metamerge, instead of insisting on using the dirname
+
+0.010     2015-09-19
+          - Update and fix see also section
+
 0.009     2015-04-04
           Use more conservative MBT version dependency
 
