@@ -176,6 +176,14 @@ sub distdir {
 	}
 }
 
+sub checkchanges {
+	my $version = quotemeta shift;
+	open my $changes, '<:raw', 'Changes' or die "Couldn't open Changes file";
+	my (undef, @content) = grep { / ^ $version (?:-TRIAL)? (?:\s+|$) /x ... /^\S/ } <$changes>;
+	pop @content while @content && $content[-1] =~ / ^ (?: \S | \s* $ ) /x;
+	warn "Changes appears to be empty\n" if not @content
+}
+
 my $Build = $^O eq 'MSWin32' ? 'Build' : './Build';
 
 sub run {
@@ -201,6 +209,7 @@ my %actions = (
 		my $arch    = Archive::Tar->new;
 		my $meta    = get_meta();
 		my $name    = $meta->name . '-' . $meta->version;
+		checkchanges($meta->version);
 		my $content = get_files(meta => $meta);
 		for my $filename (keys %{$content}) {
 			if ($content->{$filename}) {

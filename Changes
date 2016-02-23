@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add a check for the changes file to the dist command
+
 0.011     2016-02-23
           - Make conservative version logic slightly less conservative
           - Allow setting the distribution name in metamerge, instead of insisting on using the dirname
