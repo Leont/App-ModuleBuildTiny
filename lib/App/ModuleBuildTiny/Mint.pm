@@ -88,16 +88,17 @@ sub mint_modulebuildtiny {
 
 	my %args = (
 		version => '0.001',
+		dirname => $distname,
 	);
-	GetOptionsFromArray(\@arguments, \%args, qw/author=s version=s abstract=s license=s/);
+	GetOptionsFromArray(\@arguments, \%args, qw/author=s version=s abstract=s license=s dirname=s/);
 	$args{author} //= prompt('What is the author\'s name?');
 	$args{abstract} //= prompt('Give a short description of this module:');
 	$args{license} //= prompt('What license do you want to use?', 'Perl_5');
 
 	my $license = get_license(delete $args{license}, $args{author});
 
-	mkdir $distname;
-	chdir $distname;
+	mkdir $args{dirname};
+	chdir $args{dirname};
 	($args{module_name} = $distname) =~ s/-/::/g; # 5.014 for s///r?
 
 	write_module(%args, notice => $license->notice);
