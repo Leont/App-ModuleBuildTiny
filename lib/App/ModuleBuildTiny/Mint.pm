@@ -51,7 +51,7 @@ sub write_module {
 	my %opts = @_;
 	my $template = get_data_section('Module.pm');
 	my $filename = catfile('lib', split /::/, $opts{module_name}) . '.pm';
-	my $content = fill_in($template, { %opts, end => '__END__' });
+	my $content = fill_in($template, \%opts);
 	mkpath(dirname($filename));
 	write_text($filename, $content);
 }
@@ -134,7 +134,7 @@ ${{ $module_name}}::VERSION = '{{ $version }};
 use strict;
 use warnings;
 
-{{ $end }}
+{{ '__END__' }}
 
 =pod
 
