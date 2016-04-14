@@ -332,7 +332,7 @@ The actions are documented in the L<mbtiny> documentation.
 
 =item * L<scan-prereqs-cpanfile|scan-prereqs-cpanfile>
 
-A tool to automatically generate a f<cpanfile> for you.
+A tool to automatically generate a L<cpanfile> for you.
 
 =item * L<cpan-upload|cpan-upload>
 
