@@ -106,10 +106,10 @@ sub get_meta {
 		my $filename = catfile('lib', split /-/, $distname) . '.pm';
 
 		require Module::Metadata;
-		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1);
+		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
 		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
-		my $version = $data->version($data->name)->stringify;
+		my $version = $data->version($data->name) or die "Cannot parse \$VERSION from $filename";
 		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 
 		my $license;
@@ -133,7 +133,7 @@ sub get_meta {
 
 		my $metahash = {
 			name           => $distname,
-			version        => $version,
+			version        => $version->stringify,
 			author         => $authors,
 			abstract       => $abstract,
 			dynamic_config => 0,
