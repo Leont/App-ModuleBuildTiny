@@ -198,7 +198,7 @@ sub run {
 		unshift @PERL5LIB, map { rel2abs(catdir('blib', $_)) } 'arch', 'lib';
 		unshift @PATH, rel2abs(catdir('blib', 'script'));
 	}
-	system @{ $opts{command} };
+	return system @{ $opts{command} };
 }
 
 my %actions = (
@@ -222,28 +222,30 @@ my %actions = (
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($verbose || 0) > 0;
 		$arch->write("$name.tar.gz", &Archive::Tar::COMPRESS_GZIP, $name);
+		return 0;
 	},
 	distdir => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'verbose!' => \my $verbose);
 		distdir(verbose => $verbose);
+		return 0;
 	},
 	test => sub {
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING);
-		run(command => [ $Build, 'test' ], build => 1);
+		return run(command => [ $Build, 'test' ], build => 1);
 	},
 	run => sub {
 		my @arguments = @_;
 		croak "No arguments given to run" if not @arguments;
 		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1));
-		run(command => \@arguments, build => $build);
+		return run(command => \@arguments, build => $build);
 	},
 	shell => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'build!' => \my $build);
-		run(command => [ $SHELL ], build => $build);
+		return run(command => [ $SHELL ], build => $build);
 	},
 	listdeps => sub {
 		my @arguments = @_;
@@ -272,6 +274,7 @@ my %actions = (
 			require JSON::PP;
 			print JSON::PP->new->ascii->pretty->encode($prereqs->as_string_hash);
 		}
+		return 0;
 	},
 	regenerate => sub {
 		my @arguments = @_;
@@ -283,6 +286,7 @@ my %actions = (
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_text($filename, $content->{$filename}) if $content->{$filename};
 		}
+		return 0;
 	},
 );
 
