@@ -128,8 +128,8 @@ sub get_meta {
 		croak 'No license found' if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
-		$prereqs->{configure}{requires}{'Module::Build::Tiny'} ||= mbt_version();
-		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} ||= $VERSION;
+		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
+		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} //= $VERSION;
 
 		my $metahash = {
 			name           => $distname,
