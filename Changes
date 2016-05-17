@@ -1,5 +1,8 @@
 Revision history for App-ModuleBuildTiny
 
+0.013     2016-05-17
+          - Fix up for release engineering mistake
+
 0.012     2016-05-17
           - Add a check for the changes file to the dist command
           - Handle Module::Metadata failures more gracefully
