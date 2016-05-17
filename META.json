@@ -4,7 +4,7 @@
       "Leon Timmermans <leont@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "App::ModuleBuildTiny version 0.011",
+   "generated_by" : "App::ModuleBuildTiny version 0.012",
    "license" : [
       "perl_5"
    ],
@@ -21,7 +21,7 @@
       },
       "develop" : {
          "requires" : {
-            "App::ModuleBuildTiny" : "0.011"
+            "App::ModuleBuildTiny" : "0.012"
          }
       },
       "runtime" : {
@@ -53,7 +53,7 @@
    "provides" : {
       "App::ModuleBuildTiny" : {
          "file" : "lib/App/ModuleBuildTiny.pm",
-         "version" : "0.011"
+         "version" : "0.012"
       }
    },
    "release_status" : "stable",
@@ -68,5 +68,6 @@
       },
       "x_IRC" : "irc://irc.perl.org/#toolchain"
    },
-   "version" : "0.011"
+   "version" : "0.012",
+   "x_serialization_backend" : "JSON::PP version 2.27203"
 }

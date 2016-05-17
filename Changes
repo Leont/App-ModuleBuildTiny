@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.012     2016-05-17
           - Add a check for the changes file to the dist command
           - Handle Module::Metadata failures more gracefully
           - Allow null-version dependencies on mbt/ambt
