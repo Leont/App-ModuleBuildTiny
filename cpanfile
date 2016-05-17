@@ -9,7 +9,7 @@ requires 'File::Temp';
 requires 'Getopt::Long', '2.36';
 requires 'JSON::PP';
 requires 'Module::CPANfile';
-requires 'Module::Metadata';
+requires 'Module::Metadata', '1.000009';
 requires 'Module::Runtime';
 requires 'Parse::CPAN::Meta';
 requires 'Software::LicenseUtils';
