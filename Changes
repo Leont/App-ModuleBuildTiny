@@ -3,6 +3,7 @@ Revision history for App-ModuleBuildTiny
           - Add a check for the changes file to the dist command
           - Handle Module::Metadata failures more gracefully
           - Allow null-version dependencies on mbt/ambt
+          - Require version 1.000009 of Module::Metadata
 
 0.011     2016-02-23
           - Make conservative version logic slightly less conservative
