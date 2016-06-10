@@ -35,8 +35,9 @@ sub get_files {
 	else {
 		my $maniskip = maniskip;
 		$files = manifind();
-		delete $files->{$_} for keys %{ $opts{regenerate} }, grep { $maniskip->($_) } keys %$files;
+		delete $files->{$_} for grep { $maniskip->($_) } keys %$files;
 	}
+	delete $files->{$_} for keys %{ $opts{regenerate} };
 	
 	$files->{'Build.PL'} //= do {
 		my $minimum_mbt  = prereqs_for($opts{meta}, qw/configure requires Module::Build::Tiny/);
@@ -46,6 +47,7 @@ sub get_files {
 	};
 	$files->{'META.json'} //= $opts{meta}->as_string;
 	$files->{'META.yml'} //= $opts{meta}->as_string({ version => 1.4 });
+	$files->{LICENSE} //= $opts{license}->fulltext;
 	$files->{MANIFEST} //= join "\n", sort keys %$files;
 
 	return $files;
@@ -97,8 +99,8 @@ sub distname {
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
-	if (not $opts{regenerate}{'META.json'} and uptodate('META.json', 'cpanfile', $mergefile)) {
-		return CPAN::Meta->load_file('META.json', { lazy_validation => 0 });
+	if (not %{ $opts{regenerate} || {} } and uptodate('META.json', 'cpanfile', $mergefile)) {
+		return (CPAN::Meta->load_file('META.json', { lazy_validation => 0 }), undef);
 	}
 	else {
 		my $mergedata = load_mergedata($mergefile) || {};
@@ -108,7 +110,7 @@ sub get_meta {
 		require Module::Metadata;
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
 		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
-		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+		my @authors = map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR');
 		my $version = $data->version($data->name) or die "Cannot parse \$VERSION from $filename";
 		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 
@@ -123,7 +125,7 @@ sub get_meta {
 			my ($year) = $data->pod($license_section) =~ /.*? copyright .*? ([\d\-]+)/;
 			require Module::Runtime;
 			Module::Runtime::require_module($class);
-			$license = $class->new({holder => $authors, year => $year});
+			$license = $class->new({holder => join(', ', @authors), year => $year});
 		}
 		croak 'No license found' if not $license;
 
@@ -134,7 +136,7 @@ sub get_meta {
 		my $metahash = {
 			name           => $distname,
 			version        => $version->stringify,
-			author         => $authors,
+			author         => \@authors,
 			abstract       => $abstract,
 			dynamic_config => 0,
 			license        => [ $license->meta2_name ],
@@ -151,7 +153,7 @@ sub get_meta {
 			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $mergedata);
 		}
 		$metahash->{provides} ||= Module::Metadata->provides(version => 2, dir => 'lib') if not $metahash->{no_index};
-		return CPAN::Meta->create($metahash, { lazy_validation => 0 });
+		return (CPAN::Meta->create($metahash, { lazy_validation => 0 }), $license);
 	}
 }
 
@@ -160,10 +162,10 @@ Getopt::Long::Configure(qw/require_order pass_through gnu_compat/);
 
 sub distdir {
 	my %opts    = @_;
-	my $meta    = get_meta();
+	my ($meta, $license) = get_meta();
 	my $dir     = $opts{dir} || $meta->name . '-' . $meta->version;
 	mkpath($dir, $opts{verbose}, oct '755');
-	my $content = get_files(%opts, meta => $meta);
+	my $content = get_files(%opts, meta => $meta, license => $license);
 	for my $filename (keys %{$content}) {
 		my $target = catfile($dir, $filename);
 		mkpath(dirname($target)) if not -d dirname($target);
@@ -207,10 +209,10 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, 'verbose!' => \my $verbose);
 		require Archive::Tar;
 		my $arch    = Archive::Tar->new;
-		my $meta    = get_meta();
+		my ($meta, $license) = get_meta();
 		my $name    = $meta->name . '-' . $meta->version;
 		checkchanges($meta->version);
-		my $content = get_files(meta => $meta);
+		my $content = get_files(meta => $meta, license => $license);
 		for my $filename (keys %{$content}) {
 			if ($content->{$filename}) {
 				$arch->add_data($filename, $content->{$filename});
@@ -250,7 +252,7 @@ my %actions = (
 	listdeps => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/);
-		my $meta = get_meta();
+		my ($meta) = get_meta();
 
 		require CPAN::Meta::Prereqs::Filter;
 		my $prereqs = CPAN::Meta::Prereqs::Filter::filter_prereqs($meta->effective_prereqs, %opts, sanitize => 1);
@@ -278,10 +280,10 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST/;
+		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE/;
 
-		my $meta = get_meta(regenerate => \%files);
-		my $content = get_files(meta => $meta, regenerate => \%files);
+		my ($meta, $license) = get_meta(regenerate => \%files);
+		my $content = get_files(meta => $meta, regenerate => \%files, license => $license);
 		for my $filename (keys %files) {
 			mkpath(dirname($filename)) if not -d dirname($filename);
 			write_text($filename, $content->{$filename}) if $content->{$filename};
