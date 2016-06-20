@@ -2,6 +2,7 @@ Revision history for App-ModuleBuildTiny
 
           - Make failures about missing/unparseable NAME sections clearer
           - Make explicit warning when =head1 AUTHOR is missing/unparsable.
+          - Skip attempting to extract licenses from empty sections
 
 0.013     2016-05-17
           - Fix up for release engineering mistake
