@@ -138,14 +138,14 @@ sub get_meta {
 			my $content = "=head1 LICENSE\n" . $license_pod;
 			my @guess = Software::LicenseUtils->guess_license_from_pod($content);
 			next if not @guess;
-			croak "Couldn't parse license from $license_section: @guess" if @guess != 1;
+			croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
 			my $class = $guess[0];
 			my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
 			require Module::Runtime;
 			Module::Runtime::require_module($class);
 			$license = $class->new({holder => $authors, year => $year});
 		}
-		croak 'No license found' if not $license;
+		croak "No license found in $filename" if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
