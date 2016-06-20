@@ -118,7 +118,16 @@ sub get_meta {
 		defined $abstract
 			or warn "Could not parse abstract from `=head1 NAME` in $filename";
 
-		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+		my $authors = do {
+			my $author_pod = $data->pod('AUTHOR');
+			defined $author_pod
+				? [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $author_pod ]
+				: []
+		};
+
+		@{$authors}
+			or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
+
 		my $version = $data->version($data->name) or die "Cannot parse \$VERSION from $filename";
 		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 
