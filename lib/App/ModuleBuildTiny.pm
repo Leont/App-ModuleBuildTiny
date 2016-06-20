@@ -133,13 +133,14 @@ sub get_meta {
 
 		my $license;
 		for my $license_section (@license_sections) {
+			next unless defined ( my $license_pod = $data->pod($license_section) );
 			require Software::LicenseUtils;
-			my $content = "=head1 LICENSE\n" . $data->pod($license_section);
+			my $content = "=head1 LICENSE\n" . $license_pod;
 			my @guess = Software::LicenseUtils->guess_license_from_pod($content);
 			next if not @guess;
 			croak "Couldn't parse license from $license_section: @guess" if @guess != 1;
 			my $class = $guess[0];
-			my ($year) = $data->pod($license_section) =~ /.*? copyright .*? ([\d\-]+)/;
+			my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
 			require Module::Runtime;
 			Module::Runtime::require_module($class);
 			$license = $class->new({holder => $authors, year => $year});
