@@ -107,7 +107,17 @@ sub get_meta {
 
 		require Module::Metadata;
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
-		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
+
+		my ($abstract) = do {
+			my $name_pod = $data->pod('NAME');
+			defined $name_pod
+				? $name_pod =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x
+				: undef;
+		};
+
+		defined $abstract
+			or warn "Could not parse abstract from `=head1 NAME` in $filename";
+
 		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
 		my $version = $data->version($data->name) or die "Cannot parse \$VERSION from $filename";
 		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
