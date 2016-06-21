@@ -107,25 +107,45 @@ sub get_meta {
 
 		require Module::Metadata;
 		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
-		my ($abstract) = $data->pod('NAME') =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x;
-		my $authors = [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') ];
+
+		my ($abstract) = do {
+			my $name_pod = $data->pod('NAME');
+			defined $name_pod
+				? $name_pod =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x
+				: undef;
+		};
+
+		defined $abstract
+			or warn "Could not parse abstract from `=head1 NAME` in $filename";
+
+		my $authors = do {
+			my $author_pod = $data->pod('AUTHOR');
+			defined $author_pod
+				? [ map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $author_pod ]
+				: []
+		};
+
+		@{$authors}
+			or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
+
 		my $version = $data->version($data->name) or die "Cannot parse \$VERSION from $filename";
 		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 
 		my $license;
 		for my $license_section (@license_sections) {
+			next unless defined ( my $license_pod = $data->pod($license_section) );
 			require Software::LicenseUtils;
-			my $content = "=head1 LICENSE\n" . $data->pod($license_section);
+			my $content = "=head1 LICENSE\n" . $license_pod;
 			my @guess = Software::LicenseUtils->guess_license_from_pod($content);
 			next if not @guess;
-			croak "Couldn't parse license from $license_section: @guess" if @guess != 1;
+			croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
 			my $class = $guess[0];
-			my ($year) = $data->pod($license_section) =~ /.*? copyright .*? ([\d\-]+)/;
+			my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
 			require Module::Runtime;
 			Module::Runtime::require_module($class);
 			$license = $class->new({holder => $authors, year => $year});
 		}
-		croak 'No license found' if not $license;
+		croak "No license found in $filename" if not $license;
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
