@@ -11,6 +11,7 @@ our @EXPORT = qw/modulebuildtiny/;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
+use Encode 'encode_utf8';
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
@@ -216,7 +217,7 @@ my %actions = (
 		my $content = get_files(meta => $meta, license => $license);
 		for my $filename (keys %{$content}) {
 			if ($content->{$filename}) {
-				$arch->add_data($filename, $content->{$filename});
+				$arch->add_data($filename, encode_utf8($content->{$filename}));
 			}
 			else {
 				$arch->add_files($filename);
