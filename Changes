@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.016     2016-08-26
           - Encode generated files to utf-8
 
 0.015     2016-08-26
