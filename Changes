@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.017     2016-10-11
           - Always create a proper license object
 
 0.016     2016-08-26
