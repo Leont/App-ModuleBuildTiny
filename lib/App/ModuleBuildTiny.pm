@@ -97,39 +97,44 @@ sub distname {
 	return $distname;
 }
 
+sub get_license {
+	my ($data, $filename, $authors) = @_;
+	my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
+	for my $license_section (@license_sections) {
+		next unless defined ( my $license_pod = $data->pod($license_section) );
+		require Software::LicenseUtils;
+		my $content = "=head1 LICENSE\n" . $license_pod;
+		my @guess = Software::LicenseUtils->guess_license_from_pod($content);
+		next if not @guess;
+		croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
+		my $class = $guess[0];
+		my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
+		require Module::Runtime;
+		Module::Runtime::require_module($class);
+		return $class->new({holder => join(', ', @{$authors}), year => $year});
+	}
+	croak "No license found in $filename";
+}
+
 sub get_meta {
 	my %opts = @_;
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
+	my $mergedata = load_mergedata($mergefile) || {};
+	my $distname = distname($mergedata);
+	my $filename = catfile('lib', split /-/, $distname) . '.pm';
+
+	require Module::Metadata;
+	my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
+	my @authors = map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') // '' or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
+
 	if (not %{ $opts{regenerate} || {} } and uptodate('META.json', 'cpanfile', $mergefile)) {
-		return (CPAN::Meta->load_file('META.json', { lazy_validation => 0 }), undef);
+		return (CPAN::Meta->load_file('META.json', { lazy_validation => 0 }), get_license($data, $filename, \@authors));
 	}
 	else {
-		my $mergedata = load_mergedata($mergefile) || {};
-		my $distname = distname($mergedata);
-		my $filename = catfile('lib', split /-/, $distname) . '.pm';
-
-		require Module::Metadata;
-		my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
 		my ($abstract) = ($data->pod('NAME') // '')  =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x or warn "Could not parse abstract from `=head1 NAME` in $filename";
-		my @authors = map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') // '' or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
 		my $version = $data->version($data->name) // die "Cannot parse \$VERSION from $filename";
-		my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 
-		my $license;
-		for my $license_section (@license_sections) {
-			next unless defined ( my $license_pod = $data->pod($license_section) );
-			require Software::LicenseUtils;
-			my $content = "=head1 LICENSE\n" . $license_pod;
-			my @guess = Software::LicenseUtils->guess_license_from_pod($content);
-			next if not @guess;
-			croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
-			my $class = $guess[0];
-			my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
-			require Module::Runtime;
-			Module::Runtime::require_module($class);
-			$license = $class->new({holder => join(', ', @authors), year => $year});
-		}
-		croak "No license found in $filename" if not $license;
+		my $license = get_license($data, $filename, \@authors);
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();

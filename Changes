@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Always create a proper license object
+
 0.016     2016-08-26
           - Encode generated files to utf-8
 
