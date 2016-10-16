@@ -230,6 +230,7 @@ my %actions = (
 		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($verbose || 0) > 0;
+		local $Archive::Tar::FOLLOW_SYMLINK = 1;
 		$arch->write("$name.tar.gz", &Archive::Tar::COMPRESS_GZIP, $name);
 		return 0;
 	},
