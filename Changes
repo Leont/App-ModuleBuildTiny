@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Always follow symlinks when creating a tarball
+          - Include terminating newline in MANIFEST
 
 0.017     2016-10-11
           - Always create a proper license object
