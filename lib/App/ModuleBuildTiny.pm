@@ -11,7 +11,8 @@ our @EXPORT = qw/modulebuildtiny/;
 use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
-use Encode 'encode_utf8';
+use Data::Section::Simple 'get_data_section';
+use Encode qw/encode_utf8 decode_utf8/;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
@@ -19,6 +20,8 @@ use File::Path qw/mkpath rmtree/;
 use File::Slurper qw/write_text read_binary/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
+use Module::Runtime 'require_module';
+use Text::Template;
 
 use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL @PERL5LIB @PATH/;
 
@@ -97,7 +100,7 @@ sub distname {
 	return $distname;
 }
 
-sub get_license {
+sub detect_license {
 	my ($data, $filename, $authors) = @_;
 	my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 	for my $license_section (@license_sections) {
@@ -109,8 +112,7 @@ sub get_license {
 		croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
 		my $class = $guess[0];
 		my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
-		require Module::Runtime;
-		Module::Runtime::require_module($class);
+		require_module($class);
 		return $class->new({holder => join(', ', @{$authors}), year => $year});
 	}
 	croak "No license found in $filename";
@@ -128,13 +130,13 @@ sub get_meta {
 	my @authors = map { / \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') // '' or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
 
 	if (not %{ $opts{regenerate} || {} } and uptodate('META.json', 'cpanfile', $mergefile)) {
-		return (CPAN::Meta->load_file('META.json', { lazy_validation => 0 }), get_license($data, $filename, \@authors));
+		return (CPAN::Meta->load_file('META.json', { lazy_validation => 0 }), detect_license($data, $filename, \@authors));
 	}
 	else {
 		my ($abstract) = ($data->pod('NAME') // '')  =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x or warn "Could not parse abstract from `=head1 NAME` in $filename";
 		my $version = $data->version($data->name) // die "Cannot parse \$VERSION from $filename";
 
-		my $license = get_license($data, $filename, \@authors);
+		my $license = detect_license($data, $filename, \@authors);
 
 		my $prereqs = -f 'cpanfile' ? do { require Module::CPANfile; Module::CPANfile->load('cpanfile')->prereq_specs } : {};
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
@@ -208,6 +210,67 @@ sub run {
 		unshift @PATH, rel2abs(catdir('blib', 'script'));
 	}
 	return system @{ $opts{command} };
+}
+
+sub prompt {
+	my($mess, $def) = @_;
+
+	my $dispdef = defined $def ? " [$def]" : "";
+
+	local $|=1;
+	local $\;
+	print "$mess$dispdef ";
+
+	my $ans = <STDIN> // '';
+	chomp $ans;
+	return $ans ne '' ? decode_utf8($ans) : $def // '';
+}
+
+sub create_license_for {
+	my ($license_name, $author) = @_;
+	my $module = "Software::License::$license_name";
+	require_module($module);
+	return $module->new({ holder => $author });
+}
+
+sub fill_in {
+	my ($template, $hash) = @_;
+	return Text::Template->new(TYPE => 'STRING', SOURCE => $template)->fill_in(HASH => $hash);
+}
+
+sub write_module {
+	my %opts = @_;
+	my $template = get_data_section('Module.pm');
+	$template =~ s/ ^ % (\w+) /=$1/gxms;
+	my $filename = catfile('lib', split /::/, $opts{module_name}) . '.pm';
+	my $content = fill_in($template, \%opts);
+	mkpath(dirname($filename));
+	write_text($filename, $content);
+}
+
+sub write_changes {
+	my %opts = @_;
+	my $template = get_data_section('Changes');
+	my $content = fill_in($template, \%opts);
+	write_text('Changes', $content);
+}
+
+sub write_maniskip {
+	my $distname = shift;
+	write_text('MANIFEST.SKIP', "#!include_default\n$distname-.*\n");
+	maniskip(); # This expands the #!include_default as a side-effect
+	unlink 'MANIFEST.SKIP.bak' if -f 'MANIFEST.SKIP.bak';
+}
+
+sub write_license {
+	my $license = shift;
+	write_text('LICENSE', $license->fulltext);
+}
+
+sub write_readme {
+	my %opts = @_;
+	my $template = get_data_section('README');
+	write_text('README', fill_in($template, \%opts));
 }
 
 my %actions = (
@@ -299,8 +362,31 @@ my %actions = (
 	},
 	mint => sub {
 		my @arguments = @_;
-		require App::ModuleBuildTiny::Mint;
-		return App::ModuleBuildTiny::Mint::mint_modulebuildtiny(@arguments);
+		my $distname = decode_utf8(shift @arguments || prompt('What should be the name of this distribution'));
+		croak "Directory $distname already exists" if -e $distname;
+
+		my %args = (
+			version => '0.001',
+			dirname => $distname,
+		);
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s version=s abstract=s license=s dirname=s/);
+		$args{author} //= prompt('What is the author\'s name?');
+		$args{abstract} //= prompt('Give a short description of this module:');
+		$args{license} //= prompt('What license do you want to use?', 'Perl_5');
+
+		my $license = create_license_for(delete $args{license}, $args{author});
+
+		mkdir $args{dirname};
+		chdir $args{dirname};
+		($args{module_name} = $distname) =~ s/-/::/g; # 5.014 for s///r?
+
+		write_module(%args, notice => $license->notice);
+		write_license($license);
+		write_changes(%args, distname => $distname);
+		write_maniskip($distname);
+		write_readme(%args, distname => $distname, notice => $license->notice);
+
+		return 0;
 	},
 );
 
@@ -389,13 +475,55 @@ the same terms as the Perl 5 programming language system itself.
 
 =cut
 
-=begin Pod::Coverage
+__DATA__
 
-write_file
-get_meta
-dispatch
-get_files
-prereqs_for
+@@ Changes
+Revision history for {{ $distname }}
 
-=end Pod::Coverage
+{{ $version }}
+          - Initial release to an unsuspecting world
+
+@@ README
+This archive contains the distribution {{ $distname }}
+
+  {{ $abstract }}
+ 
+{{ $notice }}
+ 
+This README file was generated by mbtiny
+@@ Module.pm
+package {{ $module_name }};
+
+${{ $module_name}}::VERSION = '{{ $version }}';
+
+use strict;
+use warnings;
+
+1;
+
+{{ '__END__' }}
+
+%pod
+
+%encoding utf-8
+
+%head1 NAME
+
+{{ $module_name }} - {{ $abstract }}
+
+%head1 VERSION
+
+{{ $version }}
+
+%head1 DESCRIPTION
+
+Write a full description of the module and its features here.
+
+%head1 AUTHOR
+
+{{ $author }}
+
+%head1 COPYRIGHT AND LICENSE
+
+{{ $notice }}
 

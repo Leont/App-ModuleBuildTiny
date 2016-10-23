@@ -17,9 +17,6 @@ provides:
   App::ModuleBuildTiny:
     file: lib/App/ModuleBuildTiny.pm
     version: '0.018'
-  App::ModuleBuildTiny::Mint:
-    file: lib/App/ModuleBuildTiny/Mint.pm
-    version: '0.018'
 requires:
   Archive::Tar: '0'
   CPAN::Meta: '0'
