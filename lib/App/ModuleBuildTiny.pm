@@ -17,13 +17,14 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
-use File::Slurper qw/write_text read_binary/;
+use File::Slurper qw/write_text write_binary read_binary/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
+use JSON::PP qw/encode_json decode_json/;
 use Module::Runtime 'require_module';
 use Text::Template;
 
-use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL @PERL5LIB @PATH/;
+use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL @PERL5LIB @PATH $HOME $USERPROFILE/;
 
 sub prereqs_for {
 	my ($meta, $phase, $type, $module, $default) = @_;
@@ -273,6 +274,34 @@ sub write_readme {
 	write_text('README', fill_in($template, \%opts));
 }
 
+sub get_home {
+	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
+	return glob '~';
+}
+
+sub get_config {
+	return catfile(get_home(), qw/.mbtiny conf/);
+}
+
+sub read_json {
+	my $filename = shift;
+	-f $filename or return;
+	return decode_json(read_binary($filename));
+}
+
+sub write_json {
+	my ($filename, $content) = @_;
+	my $dirname = dirname($filename);
+	mkdir $dirname if not -d $dirname;
+	return write_binary($filename, encode_json($content));
+}
+
+my @config_items = (
+	[ 'author'  , 'What is the author\'s name?' ],
+	[ 'email'   , 'What is the author\'s email?' ],
+	[ 'license' , 'What license do you want to use?', 'Perl_5' ],
+);
+
 my %actions = (
 	dist => sub {
 		my @arguments = @_;
@@ -360,19 +389,52 @@ my %actions = (
 		}
 		return 0;
 	},
+	configure => sub {
+		my @arguments = @_;
+		my $home = get_home;
+		my $config_file = catfile($home, qw/.mbtiny conf/);
+
+		my $mode = @arguments ? $arguments[0] : 'upgrade';
+
+		if ($mode eq 'upgrade') {
+			my $config = -f $config_file ? read_json($config_file) : {};
+			for my $item (@config_items) {
+				my ($key, $description, $default) = @{$item};
+				next if defined $config->{$key};
+				$config->{$key} = prompt($description, $default);
+			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'all') {
+			my $config = {};
+			for my $item (@config_items) {
+				my ($key, $description, $default) = @{$item};
+				$config->{$key} = prompt($description, $default);
+			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'reset') {
+			return not unlink $config_file;
+		}
+		return 0;
+	},
 	mint => sub {
 		my @arguments = @_;
-		my $distname = decode_utf8(shift @arguments || prompt('What should be the name of this distribution'));
+
+		my $config_file = get_config();
+		croak "No config file present, please run mbtiny configure" if not -f $config_file;
+		my $config = read_json($config_file);
+		croak "Config not readable, please run mbtiny configure" if not defined $config;
+
+		my $distname = decode_utf8(shift @arguments || croak 'No distribution name given');
 		croak "Directory $distname already exists" if -e $distname;
 
 		my %args = (
+			%{ $config },
 			version => '0.001',
 			dirname => $distname,
 		);
 		GetOptionsFromArray(\@arguments, \%args, qw/author=s version=s abstract=s license=s dirname=s/);
-		$args{author} //= prompt('What is the author\'s name?');
-		$args{abstract} //= prompt('Give a short description of this module:');
-		$args{license} //= prompt('What license do you want to use?', 'Perl_5');
 
 		my $license = create_license_for(delete $args{license}, $args{author});
 
@@ -521,7 +583,7 @@ Write a full description of the module and its features here.
 
 %head1 AUTHOR
 
-{{ $author }}
+{{ $author }} <{{ $email }}>
 
 %head1 COPYRIGHT AND LICENSE
 
