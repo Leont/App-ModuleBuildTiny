@@ -16,7 +16,7 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
-use File::Slurper qw/write_text/;
+use File::Slurper qw/write_text read_binary/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 
@@ -225,12 +225,11 @@ my %actions = (
 				$arch->add_data($filename, encode_utf8($content->{$filename}));
 			}
 			else {
-				$arch->add_files($filename);
+				$arch->add_data($filename, read_binary($filename));
 			}
 		}
 		$_->mode($_->mode & ~oct 22) for $arch->get_files;
 		printf "tar czf $name.tar.gz %s\n", join ' ', keys %{$content} if ($verbose || 0) > 0;
-		local $Archive::Tar::FOLLOW_SYMLINK = 1;
 		$arch->write("$name.tar.gz", &Archive::Tar::COMPRESS_GZIP, $name);
 		return 0;
 	},
