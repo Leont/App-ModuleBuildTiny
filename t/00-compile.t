@@ -7,7 +7,7 @@ use Test::More;
 plan tests => 3;
 
 my @module_files = (
-	'lib/App/ModuleBuildTiny.pm',
+	'App/ModuleBuildTiny.pm',
 );
 
 my @scripts = (
