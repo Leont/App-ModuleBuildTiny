@@ -258,7 +258,7 @@ sub write_changes {
 
 sub write_maniskip {
 	my $distname = shift;
-	write_text('MANIFEST.SKIP', "#!include_default\n$distname-.*\n");
+	write_text('MANIFEST.SKIP', "#!include_default\n$distname-.*\nREADME.pod\n");
 	maniskip(); # This expands the #!include_default as a side-effect
 	unlink 'MANIFEST.SKIP.bak' if -f 'MANIFEST.SKIP.bak';
 }
