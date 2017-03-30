@@ -65,8 +65,9 @@ sub get_files {
 	$files->{'META.json'} //= $opts{meta}->as_string;
 	$files->{'META.yml'} //= $opts{meta}->as_string({ version => 1.4 });
 	$files->{LICENSE} //= $opts{license}->fulltext;
-	$files->{MANIFEST} //= join '', map { "$_\n" } sort keys %$files;
 	$files->{README} //= generate_readme($dist_name);
+	# This must come last
+	$files->{MANIFEST} //= join '', map { "$_\n" } sort keys %$files;
 
 	return $files;
 }
