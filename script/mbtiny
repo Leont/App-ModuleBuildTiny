@@ -100,7 +100,15 @@ This will cause mbtiny not to build the distribution before running the command.
 
 =item * shell
 
-Runs the C<$SHELL>, this is short for C<mbtiny run $SHELL>.
+Runs the C<$SHELL>, this is equivalent to C<mbtiny run --no-build $SHELL>. It takes one argument.
+
+=over 4
+
+=item * build
+
+This will cause mbtiny to build the distribution before running the shell.
+
+=back
 
 =item * listdeps
 
@@ -108,6 +116,58 @@ List all dependencies of this distribution. By default it prints a list of modul
 
 =item * regenerate <files>
 
-This regenerates the given files. If no files are given, it defaults to the four files it can generate: C<Build.PL>, C<MANIFEST>, C<META.json>, and C<META.yml>. You usually want to do this after bumping the version of a module, adding a dependency or adding a file.
+This regenerates the given files. If no files are given, it defaults to the six files it can regenerate: F<Build.PL>, F<MANIFEST>, F<META.json> F<META.yml>, F<LICENSE> and F<README>. You usually want to do this after bumping the version of a module, adding a dependency or adding a file.
+
+=item * mint <distribution>
+
+This creates a new distribution. It takes one mandatory positional argument, the name of the new distribution, and up to five optional named arguments
+
+=over 4
+
+=item * abstract
+
+The abstract of this new distribution. It defaults to an empty string.
+
+=item * author
+
+The name of the author of this distribution. The default value is set in the configuration file.
+
+=item * dirname
+
+The directory name for the new distribution. It defaults to the distribution name.
+
+=item * email
+
+The email address of the author. The default value is set in the configuration file.
+
+=item * license
+
+The license of the new distribution. It default is set in the configuration file, this is usually C<Perl_5>.
+
+=item * version
+
+The initial version of the new distribution. This defaults to C<0.001>.
+
+=back
+
+=item * configure <type>
+
+This creates or update your configuration file (at F<~/.mbtiny/config>). It takes one optional position argument that can take any of the following values:
+
+=over 4
+
+=item * update
+
+This asks you about all configuration items that are currently empty. This is the default.
+
+=item * all
+
+This asks you about all configuration items, even if they currently have a value.
+
+=item * reset
+
+This removes the current configuration file.
+
+=back
 
 =back

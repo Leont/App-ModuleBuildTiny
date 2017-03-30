@@ -275,11 +275,6 @@ sub write_maniskip {
 	unlink 'MANIFEST.SKIP.bak' if -f 'MANIFEST.SKIP.bak';
 }
 
-sub write_license {
-	my $license = shift;
-	write_text('LICENSE', $license->fulltext);
-}
-
 sub write_readme {
 	my %opts = @_;
 	my $template = get_data_section('README');
@@ -446,7 +441,7 @@ my %actions = (
 			version => '0.001',
 			dirname => $distname,
 		);
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s version=s abstract=s license=s dirname=s/);
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s version=s abstract=s license=s dirname=s/);
 
 		my $license = create_license_for(delete $args{license}, $args{author});
 
@@ -455,7 +450,7 @@ my %actions = (
 		($args{module_name} = $distname) =~ s/-/::/g; # 5.014 for s///r?
 
 		write_module(%args, notice => $license->notice);
-		write_license($license);
+		write_text('LICENSE', $license->fulltext);
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
 
