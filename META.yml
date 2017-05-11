@@ -17,6 +17,9 @@ provides:
   App::ModuleBuildTiny:
     file: lib/App/ModuleBuildTiny.pm
     version: '0.019'
+  App::ModuleBuildTiny::Dist:
+    file: lib/App/ModuleBuildTiny/Dist.pm
+    version: '0.019'
 requires:
   Archive::Tar: '0'
   CPAN::Meta: '0'
