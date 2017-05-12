@@ -167,6 +167,7 @@ my %actions = (
 		require CPAN::Upload::Tiny;
 		my $uploader = CPAN::Upload::Tiny->new_from_config($config_file);
 		$uploader->upload_file($name);
+		print "Successfully uploaded $name\n" if not $silent;
 		return 0;
 	},
 	run => sub {
