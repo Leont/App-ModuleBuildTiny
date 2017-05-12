@@ -33,6 +33,7 @@
             "Data::Section::Simple" : "0",
             "Encode" : "0",
             "Exporter" : "5.57",
+            "ExtUtils::Manifest" : "0",
             "File::Path" : "0",
             "File::Slurper" : "0",
             "File::Temp" : "0",
@@ -42,6 +43,7 @@
             "Module::Metadata" : "1.000009",
             "Module::Runtime" : "0",
             "Parse::CPAN::Meta" : "0",
+            "Pod::Simple::Text" : "3.23",
             "Software::LicenseUtils" : "0",
             "Text::Template" : "0",
             "perl" : "5.010"
