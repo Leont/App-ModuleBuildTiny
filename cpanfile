@@ -2,6 +2,7 @@ requires 'Archive::Tar';
 requires 'CPAN::Meta';
 requires 'CPAN::Meta::Merge';
 requires 'CPAN::Meta::Prereqs::Filter';
+requires 'CPAN::Upload::Tiny';
 requires 'Data::Section::Simple';
 requires 'Encode';
 requires 'Exporter', '5.57';

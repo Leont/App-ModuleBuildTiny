@@ -155,6 +155,20 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		return $dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1);
 	},
+	upload => sub {
+		my @arguments = @_;
+		GetOptionsFromArray(\@arguments, 'config=s' => \my $config_file, 'silent' => \my $silent);
+
+		my $dist = App::ModuleBuildTiny::Dist->new;
+		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
+		my $name = $dist->meta->name . '-' . $dist->meta->version . '.tar.gz';
+
+		$dist->write_tarball($name);
+		require CPAN::Upload::Tiny;
+		my $uploader = CPAN::Upload::Tiny->new_from_config($config_file);
+		$uploader->upload_file($name);
+		return 0;
+	},
 	run => sub {
 		my @arguments = @_;
 		croak "No arguments given to run" if not @arguments;
