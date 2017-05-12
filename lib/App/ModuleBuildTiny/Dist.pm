@@ -3,7 +3,7 @@ package App::ModuleBuildTiny::Dist;
 use 5.010;
 use strict;
 use warnings;
-our $VERSION = '0.019';
+our $VERSION = '0.020';
 
 use Carp qw/croak/;
 use Config;
