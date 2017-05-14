@@ -136,8 +136,8 @@ my %actions = (
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'verbose!' => \my $verbose);
 		my $dist = App::ModuleBuildTiny::Dist->new;
-		my $name = $dist->meta->name . '-' . $dist->meta->version . '.tar.gz';
-		printf "tar czf $name %s\n", join ' ', $dist->files if ($verbose || 0) > 0;
+		my $name = $dist->meta->name . '-' . $dist->meta->version;
+		printf "tar czf $name.tar.tz %s\n", join ' ', $dist->files if ($verbose || 0) > 0;
 		$dist->write_tarball($name);
 		return 0;
 	},
@@ -161,13 +161,12 @@ my %actions = (
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
-		my $name = $dist->meta->name . '-' . $dist->meta->version . '.tar.gz';
-
-		$dist->write_tarball($name);
+		my $name = $dist->meta->name . '-' . $dist->meta->version;
+		my $file = $dist->write_tarball($name);
 		require CPAN::Upload::Tiny;
 		my $uploader = CPAN::Upload::Tiny->new_from_config($config_file);
-		$uploader->upload_file($name);
-		print "Successfully uploaded $name\n" if not $silent;
+		$uploader->upload_file($file);
+		print "Successfully uploaded $file\n" if not $silent;
 		return 0;
 	},
 	run => sub {
