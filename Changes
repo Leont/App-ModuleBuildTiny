@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add check for metadata
+
 0.021
           - Fix tarball directory name
 

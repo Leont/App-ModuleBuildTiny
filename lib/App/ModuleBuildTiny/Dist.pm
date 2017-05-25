@@ -29,7 +29,7 @@ sub uptodate {
 	my ($destination, @source) = @_;
 	return if not -e $destination;
 	for my $source (grep { defined && -e } @source) {
-		return if -M $destination < -M $source;
+		return if -M $destination > -M $source;
 	}
 	return 1;
 }
@@ -85,7 +85,15 @@ sub checkchanges {
 	open my $changes, '<:raw', 'Changes' or die "Couldn't open Changes file";
 	my (undef, @content) = grep { / ^ $version (?:-TRIAL)? (?:\s+|$) /x ... /^\S/ } <$changes>;
 	pop @content while @content && $content[-1] =~ / ^ (?: \S | \s* $ ) /x;
-	warn "Changes appears to be empty\n" if not @content
+	die "Changes appears to be empty\n" if not @content
+}
+
+sub checkmeta {
+	my $self = shift;
+	(my $module_name = $self->{meta}->name) =~ s/-/::/g;
+	my $meta_version = $self->{meta}->version;
+	my $detected_version = $self->{data}->version($module_name);
+	die sprintf "Version mismatch between module and meta, did you forgot to run regenerate? (%s versus %s)", $detected_version, $meta_version if $detected_version != $meta_version;
 }
 
 sub new {
@@ -159,7 +167,8 @@ sub new {
 	return bless {
 		files => \%files,
 		meta  => $meta,
-		license => $license
+		license => $license,
+		data => $data,
 	}, $class
 }
 
@@ -184,6 +193,7 @@ sub write_tarball {
 	require Archive::Tar;
 	my $arch = Archive::Tar->new;
 	checkchanges($self->meta->version);
+	$self->checkmeta();
 	for my $filename ($self->files) {
 		$arch->add_data($filename, $self->get_file($filename), { mode => oct '0644'} );
 	}
