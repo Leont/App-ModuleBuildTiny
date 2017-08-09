@@ -20,6 +20,23 @@ use Env qw/@PERL5LIB @PATH/;
 
 my $Build = $^O eq 'MSWin32' ? 'Build' : './Build';
 
+sub find {
+	my ($re, @dir) = @_;
+	my $ret;
+	File::Find::find(sub { $ret++ if /$re/ }, @dir);
+	return $ret;
+}
+
+sub mbt_version {
+	if (find(qr/\.PL$/, 'lib')) {
+		return '0.039';
+	}
+	elsif (find(qr/\.xs$/, 'lib')) {
+		return '0.036';
+	}
+	return '0.034';
+}
+
 sub prereqs_for {
 	my ($meta, $phase, $type, $module, $default) = @_;
 	return $meta->effective_prereqs->requirements_for($phase, $type)->requirements_for_module($module) || $default || 0;
