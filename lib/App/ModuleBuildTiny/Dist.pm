@@ -51,9 +51,14 @@ sub uptodate {
 	return 1;
 }
 
+sub distfilename {
+	my $distname = shift;
+	return catfile('lib', split /-/, $distname) . '.pm';
+}
+
 sub generate_readme {
 	my $distname = shift;
-	(my $filename = "lib/$distname.pm") =~ s{-}{/};
+	my $filename = distfilename($distname);
 	croak "Main module file $filename doesn't exist" if not -f $filename;
 	my $parser = Pod::Simple::Text->new;
 	$parser->output_string( \my $content );
@@ -110,7 +115,7 @@ sub new {
 	my $mergefile = $opts{mergefile} || (grep { -f } qw/metamerge.json metamerge.yml/)[0];
 	my $mergedata = load_mergedata($mergefile) || {};
 	my $distname = distname($mergedata);
-	my $filename = catfile('lib', split /-/, $distname) . '.pm';
+	my $filename = distfilename($distname);
 
 	require Module::Metadata; Module::Metadata->VERSION('1.000009');
 	my $data = Module::Metadata->new_from_file($filename, collect_pod => 1) or die "Couldn't analyse $filename: $!";
