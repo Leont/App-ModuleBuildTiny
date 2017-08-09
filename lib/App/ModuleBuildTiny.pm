@@ -28,23 +28,6 @@ use App::ModuleBuildTiny::Dist;
 
 use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $SHELL $HOME $USERPROFILE/;
 
-sub find {
-	my ($re, @dir) = @_;
-	my $ret;
-	File::Find::find(sub { $ret++ if /$re/ }, @dir);
-	return $ret;
-}
-
-sub mbt_version {
-	if (find(qr/\.PL$/, 'lib')) {
-		return '0.039';
-	}
-	elsif (find(qr/\.xs$/, 'lib')) {
-		return '0.036';
-	}
-	return '0.034';
-}
-
 Getopt::Long::Configure(qw/require_order pass_through gnu_compat/);
 
 sub prompt {
