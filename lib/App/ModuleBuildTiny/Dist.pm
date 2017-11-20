@@ -5,6 +5,7 @@ use strict;
 use warnings;
 our $VERSION = '0.022';
 
+use CPAN::Meta;
 use Carp qw/croak/;
 use Config;
 use Encode qw/encode_utf8 decode_utf8/;
@@ -158,6 +159,25 @@ sub new {
 			require CPAN::Meta::Merge;
 			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $mergedata);
 		}
+
+		# this avoids a long-standing CPAN.pm bug that incorrectly merges runtime and
+		# "build" (build+test) requirements by ensuring requirements stay unified
+		# across all three phases
+		require CPAN::Meta::Prereqs::Filter;
+		my $filtered = CPAN::Meta::Prereqs::Filter::filter_prereqs(CPAN::Meta::Prereqs->new($metahash->{prereqs}), sanitize => 1);
+		my $merged_prereqs = $filtered->merged_requirements([qw/runtime build test/], ['requires']);
+		my %seen;
+		for my $phase (qw/runtime build test/) {
+			my $requirements = $filtered->requirements_for($phase, 'requires');
+			for my $module ($requirements->required_modules) {
+				$requirements->clear_requirement($module);
+				next if $seen{$module}++;
+				my $module_requirement = $merged_prereqs->requirements_for_module($module);
+				$requirements->add_string_requirement($module => $module_requirement);
+			}
+		}
+		$metahash->{prereqs} = $filtered->as_string_hash;
+
 		$metahash->{provides} ||= Module::Metadata->provides(version => 2, dir => 'lib') if not $metahash->{no_index};
 		CPAN::Meta->create($metahash, { lazy_validation => 0 });
 	};

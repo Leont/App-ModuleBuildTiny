@@ -171,7 +171,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 
 		require CPAN::Meta::Prereqs::Filter;
-		my $prereqs = CPAN::Meta::Prereqs::Filter::filter_prereqs($dist->meta->effective_prereqs, %opts, sanitize => 1);
+		my $prereqs = CPAN::Meta::Prereqs::Filter::filter_prereqs($dist->meta->effective_prereqs, %opts);
 
 		if (!$opts{json}) {
 			my @phases = qw/build test configure runtime/;
