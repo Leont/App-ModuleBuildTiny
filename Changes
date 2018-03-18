@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Work around older CPAN.pm metadata confusion
+
 0.022
           - Add check for metadata
           - Fix missed functions in move to Dist.pm
