@@ -314,7 +314,7 @@ A tool to automatically generate a L<cpanfile> for you.
 
 A program that facilitates upload the tarball as produced by C<mbtiny>.
 
-=item * L<perl-reversion|perl-reversion>
+=item * L<perl-reversion|https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
 
 A tool to bump the version in your modules.
 
