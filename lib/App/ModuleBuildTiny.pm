@@ -12,7 +12,7 @@ use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
 use Data::Section::Simple 'get_data_section';
-use Encode qw/encode_utf8 decode_utf8/;
+use Encode qw/encode decode/;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath/;
@@ -41,7 +41,7 @@ sub prompt {
 
 	my $ans = <STDIN> // '';
 	chomp $ans;
-	return $ans ne '' ? decode_utf8($ans) : $def // '';
+	return $ans ne '' ? decode('UTF-8', $ans) : $def // '';
 }
 
 sub create_license_for {
@@ -200,7 +200,12 @@ my %actions = (
 
 		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => \%files);
 		for my $filename ($dist->files) {
-			write_text($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
+			if ($dist->is_generated($filename)) {
+				open my $fh, '> :raw', $filename or die "Could not generate $filename: $!";
+				my $out = $dist->get_file($filename);
+				$out = Encode::encode('UTF-8', $out) if $filename =~ /META.yml/;
+				print $fh $out;
+			}
 		}
 		return 0;
 	},
@@ -241,7 +246,7 @@ my %actions = (
 		my $config = read_json($config_file);
 		croak "Config not readable, please run mbtiny configure" if not defined $config;
 
-		my $distname = decode_utf8(shift @arguments || croak 'No distribution name given');
+		my $distname = decode('UTF-8', shift @arguments || croak 'No distribution name given');
 		croak "Directory $distname already exists" if -e $distname;
 
 		my %args = (
