@@ -8,7 +8,6 @@ our $VERSION = '0.023';
 use CPAN::Meta;
 use Carp qw/croak/;
 use Config;
-use Encode qw/encode_utf8 decode_utf8/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
@@ -253,7 +252,7 @@ sub get_file {
 	my ($self, $filename) = @_;
 	return if not exists $self->{files}{$filename};
 	my $raw = $self->{files}{$filename};
-	return $raw ? encode_utf8($raw) : read_binary($filename);
+	return $raw ? $raw : read_binary($filename);
 }
 
 sub is_generated {
