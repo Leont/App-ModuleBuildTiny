@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Write generated files as binary
+
 0.023
           - Work around older CPAN.pm metadata confusion
           - Try taking author list from "AUTHORS" section too.
