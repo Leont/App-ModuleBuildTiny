@@ -200,7 +200,7 @@ my %actions = (
 
 		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => \%files);
 		for my $filename ($dist->files) {
-			write_text($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
+			write_binary($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
 		}
 		return 0;
 	},
