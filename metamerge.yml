@@ -7,6 +7,7 @@ resources:
         web: https://github.com/Leont/app-modulebuildtiny/issues
     x_IRC: irc://irc.perl.org/#toolchain
 prereqs:
-	runtime:
-		requires:
-			Module::Metadata: 1.000009
+    runtime:
+        requires:
+            Module::Metadata: '1.000009'
+            Software::LicenseUtils: '0.103014'

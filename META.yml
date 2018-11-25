@@ -40,7 +40,7 @@ requires:
   Module::Runtime: '0'
   Parse::CPAN::Meta: '0'
   Pod::Simple::Text: '3.23'
-  Software::LicenseUtils: '0'
+  Software::LicenseUtils: '0.103014'
   Text::Template: '0'
   perl: '5.010'
 resources:
@@ -49,3 +49,4 @@ resources:
   repository: https://github.com/Leont/app-modulebuildtiny.git
 version: '0.024'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
+x_spdx_expression: 'Artistic-1.0-Perl OR GPL-1.0-or-later'
