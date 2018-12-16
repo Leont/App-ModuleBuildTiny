@@ -9,5 +9,6 @@ resources:
 prereqs:
     runtime:
         requires:
+            CPAN::Upload::Tiny: '0.009'
             Module::Metadata: '1.000009'
             Software::LicenseUtils: '0.103014'

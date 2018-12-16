@@ -143,7 +143,8 @@ my %actions = (
 		my $name = $dist->meta->name . '-' . $dist->meta->version;
 		my $file = $dist->write_tarball($name);
 		require CPAN::Upload::Tiny;
-		my $uploader = CPAN::Upload::Tiny->new_from_config($config_file);
+		CPAN::Upload::Tiny->VERSION('0.009');
+		my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($config_file);
 		$uploader->upload_file($file);
 		print "Successfully uploaded $file\n" if not $silent;
 		return 0;

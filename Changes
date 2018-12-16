@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          - Allow fetching credentials from console
           - Add SPDX support to meta files
 
 0.024

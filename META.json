@@ -30,7 +30,7 @@
             "CPAN::Meta" : "0",
             "CPAN::Meta::Merge" : "0",
             "CPAN::Meta::Prereqs::Filter" : "0",
-            "CPAN::Upload::Tiny" : "0",
+            "CPAN::Upload::Tiny" : "0.009",
             "Data::Section::Simple" : "0",
             "Encode" : "0",
             "Exporter" : "5.57",
