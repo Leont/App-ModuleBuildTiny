@@ -86,13 +86,9 @@ sub write_readme {
 	write_text('README', fill_in($template, \%opts));
 }
 
-sub get_home {
-	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
-	return glob '~';
-}
-
 sub get_config {
-	return catfile(get_home(), qw/.mbtiny conf/);
+	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
+	return catfile(glob('~'), qw/.mbtiny conf/);
 }
 
 sub read_json {
@@ -206,8 +202,7 @@ my %actions = (
 	},
 	configure => sub {
 		my @arguments = @_;
-		my $home = get_home;
-		my $config_file = catfile($home, qw/.mbtiny conf/);
+		my $config_file = get_config();
 
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
 
