@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add --trial option to regenerate/upload/dist/distdir
+
 0.025     Sun Dec 16 22:09:12 CET 2018
           - Allow fetching credentials from console
           - Add SPDX support to meta files
