@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add non-interactive and extended options to test
+
 0.026
           - Add --trial option to regenerate/upload/dist/distdir
 
