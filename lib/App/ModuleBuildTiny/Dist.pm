@@ -65,7 +65,7 @@ sub generate_readme {
 	$parser->output_string( \my $content );
 	$parser->parse_characters(1);
 	$parser->parse_file($filename);
-	return $content;
+	return decode_utf8($content);
 }
 
 sub load_mergedata {

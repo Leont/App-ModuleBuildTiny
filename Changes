@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Be more tolerant in parsing =encoding utf-8
+          - Fix encoding of generated README
           - Add non-interactive and extended options to test
 
 0.026
