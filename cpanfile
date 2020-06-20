@@ -13,7 +13,7 @@ requires 'File::Temp';
 requires 'Getopt::Long', '2.36';
 requires 'JSON::PP';
 requires 'Module::CPANfile';
-requires 'Module::Metadata';
+requires 'Module::Metadata', '1.000037'; # decode_pod
 requires 'Module::Runtime';
 requires 'Parse::CPAN::Meta';
 requires 'Pod::Simple::Text', '3.23';
