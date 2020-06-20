@@ -16,6 +16,8 @@ use File::Spec::Functions qw/catfile catdir rel2abs/;
 use File::Slurper qw/write_text read_binary/;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use Module::Runtime 'require_module';
+use Module::Metadata '1.000037';
+
 use Pod::Escapes qw/e2char/;
 
 use Env qw/@PERL5LIB @PATH/;
@@ -149,7 +151,6 @@ sub new {
 	my $distname = distname($mergedata);
 	my $filename = distfilename($distname);
 
-	require Module::Metadata; Module::Metadata->VERSION('1.000009');
 	my $data = Module::Metadata->new_from_file($filename, collect_pod => 1, decode_pod => 1) or die "Couldn't analyse $filename: $!";
 	my @authors = map { s/E<([^>]+)>/e2char($1)/ge; m/ \A \s* (.+?) \s* \z /x } grep { /\S/ } split /\n/, $data->pod('AUTHOR') // $data->pod('AUTHORS') // '' or warn "Could not parse any authors from `=head1 AUTHOR` in $filename";
 	my $license = detect_license($data, $filename, \@authors);
