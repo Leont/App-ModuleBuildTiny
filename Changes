@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.028
           - Load prereqs.json/yml on meta regeneration
           - Let Module::Metadata do POD decoding
           - Add escape code mangling to author extraction
