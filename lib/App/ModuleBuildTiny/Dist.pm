@@ -98,7 +98,7 @@ sub detect_license {
 	if ($mergedata->{license} && @{$mergedata->{license}} == 1) {
 		require Software::LicenseUtils;
 		Software::LicenseUtils->VERSION(0.103014);
-		my $spec_version = $mergedata->{'meta-spec'} && $mergedata->{'meta-spec'}{version} ? $mergedata->{'meta-spec'}{version} : undef;
+		my $spec_version = $mergedata->{'meta-spec'} && $mergedata->{'meta-spec'}{version} ? $mergedata->{'meta-spec'}{version} : 2;
 		my @guess = Software::LicenseUtils->guess_license_from_meta_key($mergedata->{license}[0], $spec_version);
 		croak "Couldn't parse license from metamerge: @guess" if @guess > 1;
 		if (@guess) {
