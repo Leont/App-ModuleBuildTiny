@@ -86,7 +86,19 @@ sub distname {
 }
 
 sub detect_license {
-	my ($data, $filename, $authors) = @_;
+	my ($data, $filename, $authors, $mergedata) = @_;
+	if ($mergedata->{license} && @{$mergedata->{license}} == 1) {
+		require Software::LicenseUtils;
+		Software::LicenseUtils->VERSION(0.103014);
+		my $spec_version = $mergedata->{'meta-spec'} && $mergedata->{'meta-spec'}{version} ? $mergedata->{'meta-spec'}{version} : undef;
+		my @guess = Software::LicenseUtils->guess_license_from_meta_key($mergedata->{license}[0], $spec_version);
+		croak "Couldn't parse license from metamerge: @guess" if @guess > 1;
+		if (@guess) {
+			my $class = $guess[0];
+			require_module($class);
+			return $class->new({holder => join(', ', @{$authors})});
+		}
+	}
 	my (@license_sections) = grep { /licen[cs]e|licensing|copyright|legal|authors?\b/i } $data->pod_inside;
 	for my $license_section (@license_sections) {
 		next unless defined ( my $license_pod = $data->pod($license_section) );
@@ -133,7 +145,7 @@ sub new {
 	if (read_binary($filename) =~ /^=encoding (?i:utf)-?8$/m) {
 		$_ = decode_utf8($_) for @authors;
 	}
-	my $license = detect_license($data, $filename, \@authors);
+	my $license = detect_license($data, $filename, \@authors, $mergedata);
 
 	my $load_meta = !%{ $opts{regenerate} || {} } && uptodate('META.json', 'cpanfile', $mergefile);
 	my $meta = $load_meta ? CPAN::Meta->load_file('META.json', { lazy_validation => 0 }) : do {
