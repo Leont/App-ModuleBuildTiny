@@ -16,7 +16,7 @@ use File::Spec::Functions qw/catfile catdir rel2abs/;
 use File::Slurper qw/write_text read_binary/;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use Module::Runtime 'require_module';
-use Module::Metadata '1.000037';
+use Module::Metadata 1.000037;
 
 use Pod::Escapes qw/e2char/;
 
