@@ -54,7 +54,11 @@ The distribution name is taken from the local directory name.
 
 =item *
 
-The version, abstract and author are taken from the main module of the distribution. 
+The version, abstract and author are taken from the main module of the distribution.
+
+=item *
+
+The license is extracted from the POD, unless a metamerge file overrides this
 
 =item *
 
