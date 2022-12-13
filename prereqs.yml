@@ -4,7 +4,7 @@ runtime:
     CPAN::Meta: 0
     CPAN::Meta::Merge: 0
     CPAN::Meta::Prereqs::Filter: 0
-    CPAN::Upload::Tiny: 0
+    CPAN::Upload::Tiny: '0.009'
     Data::Section::Simple: 0
     Encode: 0
     Exporter: '5.57'
@@ -19,7 +19,7 @@ runtime:
     Module::Runtime: 0
     Parse::CPAN::Meta: 0
     Pod::Simple::Text:  '3.23'
-    Software::LicenseUtils: 0
+    Software::LicenseUtils: '0.103014'
     Text::Template: 0
     perl: '5.010'
 

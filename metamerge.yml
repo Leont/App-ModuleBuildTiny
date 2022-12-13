@@ -6,9 +6,3 @@ resources:
     bugtracker:
         web: https://github.com/Leont/app-modulebuildtiny/issues
     x_IRC: irc://irc.perl.org/#toolchain
-prereqs:
-    runtime:
-        requires:
-            CPAN::Upload::Tiny: '0.009'
-            Module::Metadata: '1.000009'
-            Software::LicenseUtils: '0.103014'
