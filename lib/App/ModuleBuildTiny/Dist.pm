@@ -32,13 +32,7 @@ sub find {
 }
 
 sub mbt_version {
-	if (find(qr/\.PL$/, 'lib')) {
-		return '0.039';
-	}
-	elsif (find(qr/\.xs$/, 'lib')) {
-		return '0.036';
-	}
-	return '0.034';
+	return '0.039';
 }
 
 sub prereqs_for {
