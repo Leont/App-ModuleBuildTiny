@@ -3,6 +3,9 @@ abstract: 'A standalone authoring tool for Module::Build::Tiny'
 author:
   - 'Leon Timmermans <leont@cpan.org>'
 build_requires:
+  File::Spec: '0'
+  IO::Handle: '0'
+  IPC::Open3: '0'
   Test::More: '0'
 configure_requires:
   Module::Build::Tiny: '0.039'
@@ -26,12 +29,18 @@ requires:
   CPAN::Meta::Merge: '0'
   CPAN::Meta::Prereqs::Filter: '0'
   CPAN::Upload::Tiny: '0.009'
+  Carp: '0'
+  Config: '0'
   Data::Section::Simple: '0'
   Encode: '0'
+  Env: '0'
   Exporter: '5.57'
   ExtUtils::Manifest: '0'
+  File::Basename: '0'
+  File::Copy: '0'
   File::Path: '0'
   File::Slurper: '0'
+  File::Spec::Functions: '0'
   File::Temp: '0'
   Getopt::Long: '2.36'
   JSON::PP: '0'
@@ -40,10 +49,13 @@ requires:
   Module::Runtime: '0'
   Parse::CPAN::Meta: '0'
   Perl::PrereqScanner: '0'
+  Pod::Escapes: '0'
   Pod::Simple::Text: '3.23'
   Software::LicenseUtils: '0.103014'
   Text::Template: '0'
   perl: '5.010'
+  strict: '0'
+  warnings: '0'
 resources:
   IRC: irc://irc.perl.org/#toolchain
   bugtracker: https://github.com/Leont/app-modulebuildtiny/issues
