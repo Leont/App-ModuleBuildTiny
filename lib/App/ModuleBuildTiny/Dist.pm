@@ -141,18 +141,27 @@ sub checkmeta {
 }
 
 sub load_prereqs {
+	my @prereqs;
 	if (-f 'prereqs.json') {
-		return load_jsonyaml('prereqs.json');
+		push @prereqs, load_jsonyaml('prereqs.json');
 	}
-	elsif (-f 'prereqs.yml') {
-		return load_jsonyaml('prereqs.yml');
+	if (-f 'prereqs.yml') {
+		push @prereqs, load_jsonyaml('prereqs.yml');
 	}
-	elsif (-f 'cpanfile') {
+	if (-f 'cpanfile') {
 		require Module::CPANfile;
-		return Module::CPANfile->load('cpanfile')->prereq_specs;
+		push @prereqs, Module::CPANfile->load('cpanfile')->prereq_specs;
+	}
+	if (@prereqs == 1) {
+		return $prereqs[0];
+	}
+	elsif (@prereqs == 0) {
+		return {};
 	}
 	else {
-		return {};
+		@prereqs = map { CPAN::Meta::Prereqs->new($_) } @prereqs;
+		my $prereqs = $prereqs[0]->with_merged_prereqs([ @prereqs[1..$#prereqs] ]);
+		$prereqs->as_string_hash;
 	}
 }
 
