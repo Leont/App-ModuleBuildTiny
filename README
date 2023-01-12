@@ -19,17 +19,6 @@ FUNCTIONS
 
 SEE ALSO
 
- Helpers
-
-      * perl-reversion
-      <https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
-
-      A tool to bump the version in your modules.
-
-      * perl-bump-version
-
-      An alternative tool to bump the version in your modules
-
  Similar programs
 
       * Dist::Zilla

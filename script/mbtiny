@@ -94,7 +94,7 @@ A C<metamerge.json> or C<metamerge.yml> file can be used to merge any additional
 
 =head1 WORKFLOWS
 
-It supports two different workflows, which I call Feedback and Generator. In both cases, additional tools are used for various other authoring tasks such as perl-reversion.
+It supports two different workflows, which I call Feedback and Generator.
 
 =head2 Feedback
 
@@ -185,6 +185,30 @@ This will omit a specific from the dependencies, it can be specified multiple ti
 =item * regenerate <files>
 
 This regenerates the given files. If no files are given, it defaults to the six files it can regenerate: F<Build.PL>, F<MANIFEST>, F<META.json> F<META.yml>, F<LICENSE> and F<README>. You usually want to do this after bumping the version of a module, adding a dependency or adding a file.
+
+=over 4
+
+=item * bump
+
+If this flag is given the version of the modules will be bumped during this regeneration.
+
+=item * version = <version>
+
+When bumping this sets the new version to a specific value instead of deriving it from the current version.
+
+=item * trial
+
+This makes the new version a trial version.
+
+=item * verbose
+
+Enable progress messages to be printed to STDOUT.
+
+=item * dry_run
+
+This will prevent the modules from being modified, this is useful with the verbose option to verify expected functionality.
+
+=back
 
 =item * mint <distribution>
 

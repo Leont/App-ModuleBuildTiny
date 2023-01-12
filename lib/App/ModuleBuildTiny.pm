@@ -105,6 +105,15 @@ sub write_json {
 	return write_binary($filename, $json);
 }
 
+sub bump_versions {
+	my (%opts) = @_;
+	require App::RewriteVersion;
+	my $app = App::RewriteVersion->new(%opts);
+	my $trial = delete $opts{trial};
+	my $new_version = defined $opts{version} ? delete $opts{version} : $app->bump_version($app->current_version);
+	$app->rewrite_versions($new_version, is_trial => $trial);
+}
+
 my @config_items = (
 	[ 'author'  , 'What is the author\'s name?' ],
 	[ 'email'   , 'What is the author\'s email?' ],
@@ -198,12 +207,18 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/);
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
-		my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
-		for my $filename ($dist->files) {
-			write_binary($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
+		if ($opts{bump}) {
+			bump_versions(%opts);
+		}
+
+		if (!$opts{dry_run}) {
+			my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
+			for my $filename ($dist->files) {
+				write_binary($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
+			}
 		}
 		return 0;
 	},
@@ -307,20 +322,6 @@ The actions are documented in the L<mbtiny> documentation.
 =back
 
 =head1 SEE ALSO
-
-=head2 Helpers
-
-=over 4
-
-=item * L<perl-reversion|https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
-
-A tool to bump the version in your modules.
-
-=item * L<perl-bump-version|perl-bump-version>
-
-An alternative tool to bump the version in your modules
-
-=back
 
 =head2 Similar programs
 

@@ -11,6 +11,7 @@
    },
    "runtime" : {
       "requires" : {
+         "App::RewriteVersion" : "0",
          "Archive::Tar" : "0",
          "CPAN::Meta" : "0",
          "CPAN::Meta::Merge" : "0",
