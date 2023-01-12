@@ -98,7 +98,7 @@ A C<metamerge.json> or C<metamerge.yml> file can be used to merge any additional
 
 =head1 WORKFLOWS
 
-It supports two different workflows, which I call Feedback and Generator. In both cases, additional tools are used for various other authoring tasks such as perl-reversion, scan-prereqs-cpanfile and cpan-upload.
+It supports two different workflows, which I call Feedback and Generator. In both cases, additional tools are used for various other authoring tasks such as perl-reversion and scan-prereqs-cpanfile.
 
 =head2 Feedback
 

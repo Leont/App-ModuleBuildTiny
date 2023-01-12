@@ -311,10 +311,6 @@ The actions are documented in the L<mbtiny> documentation.
 
 A tool to automatically generate a L<cpanfile> for you.
 
-=item * L<cpan-upload|cpan-upload>
-
-A program that facilitates upload the tarball as produced by C<mbtiny>.
-
 =item * L<perl-reversion|https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
 
 A tool to bump the version in your modules.

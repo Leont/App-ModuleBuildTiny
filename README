@@ -29,10 +29,6 @@ SEE ALSO
 
       A tool to automatically generate a cpanfile for you.
 
-      * cpan-upload
-
-      A program that facilitates upload the tarball as produced by mbtiny.
-
       * perl-reversion
       <https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
 
