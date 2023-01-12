@@ -19,7 +19,7 @@ use File::Path qw/mkpath/;
 use File::Slurper qw/write_text write_binary read_binary/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
-use JSON::PP qw/encode_json decode_json/;
+use JSON::PP qw/decode_json/;
 use Module::Runtime 'require_module';
 use Pod::Simple::Text 3.23;
 use Text::Template;
@@ -101,7 +101,8 @@ sub write_json {
 	my ($filename, $content) = @_;
 	my $dirname = dirname($filename);
 	mkdir $dirname if not -d $dirname;
-	return write_binary($filename, encode_json($content));
+	my $json = JSON::PP->new->utf8->pretty->canonical->encode($content);
+	return write_binary($filename, $json);
 }
 
 my @config_items = (
