@@ -253,6 +253,13 @@ my %actions = (
 			}
 			write_json($config_file, $config);
 		}
+		elsif ($mode eq 'list') {
+			my $config = -f $config_file ? read_json($config_file) : {};
+			for my $item (@config_items) {
+				my ($key, $description, $default) = @{$item};
+				printf "%s: %s\n", ucfirst $key, $config->{$key} // '(undefined)';
+			}
+		}
 		elsif ($mode eq 'reset') {
 			return not unlink $config_file;
 		}

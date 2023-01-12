@@ -256,6 +256,10 @@ This asks you about all configuration items that are currently empty. This is th
 
 This asks you about all configuration items, even if they currently have a value.
 
+=item * list
+
+This lists your current configuration.
+
 =item * reset
 
 This removes the current configuration file.
