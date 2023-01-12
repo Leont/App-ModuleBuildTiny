@@ -207,6 +207,14 @@ my %actions = (
 		}
 		return 0;
 	},
+	scan => sub {
+		my @arguments = @_;
+		my %opts = (sanitize => 1);
+		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize omit=s@/);
+		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
+		my $prereqs = $dist->scan_prereqs(%opts);
+		write_json('prereqs.json', $prereqs->as_string_hash);
+	},
 	configure => sub {
 		my @arguments = @_;
 		my $config_file = get_config();
@@ -307,10 +315,6 @@ The actions are documented in the L<mbtiny> documentation.
 =head2 Helpers
 
 =over 4
-
-=item * L<scan-prereqs-cpanfile|scan-prereqs-cpanfile>
-
-A tool to automatically generate a L<cpanfile> for you.
 
 =item * L<perl-reversion|https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
 

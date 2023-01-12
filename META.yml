@@ -39,6 +39,7 @@ requires:
   Module::Metadata: '1.000037'
   Module::Runtime: '0'
   Parse::CPAN::Meta: '0'
+  Perl::PrereqScanner: '0'
   Pod::Simple::Text: '3.23'
   Software::LicenseUtils: '0.103014'
   Text::Template: '0'

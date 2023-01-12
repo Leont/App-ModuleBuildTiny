@@ -44,6 +44,7 @@
             "Module::Metadata" : "1.000037",
             "Module::Runtime" : "0",
             "Parse::CPAN::Meta" : "0",
+            "Perl::PrereqScanner" : "0",
             "Pod::Simple::Text" : "3.23",
             "Software::LicenseUtils" : "0.103014",
             "Text::Template" : "0",
@@ -79,6 +80,6 @@
       "x_IRC" : "irc://irc.perl.org/#toolchain"
    },
    "version" : "0.029",
-   "x_serialization_backend" : "JSON::PP version 4.04",
+   "x_serialization_backend" : "JSON::PP version 4.07",
    "x_spdx_expression" : "Artistic-1.0-Perl OR GPL-1.0-or-later"
 }

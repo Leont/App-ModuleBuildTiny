@@ -134,6 +134,40 @@ sub checkmeta {
 	die sprintf "Version mismatch between module and meta, did you forgot to run regenerate? (%s versus %s)", $detected_version, $meta_version if $detected_version != $meta_version;
 }
 
+sub scan_files {
+	my ($files, $omit) = @_;
+	my $combined = CPAN::Meta::Requirements->new;
+	require Perl::PrereqScanner;
+	my $scanner = Perl::PrereqScanner->new;
+	for my $file (@{$files}) {
+		my $prereqs = $scanner->scan_file($file);
+		$combined->add_requirements($prereqs);
+	}
+	$combined->clear_requirement($_) for @{$omit};
+	return $combined
+}
+
+sub scan_prereqs {
+	my ($self, %opts) = @_;
+	my (@runtime_files, @test_files);
+	File::Find::find(sub { push @runtime_files, $File::Find::name if -f && /\.pm$/ }, 'lib');
+	File::Find::find(sub { push @runtime_files, $File::Find::name if -f }, 'script');
+	File::Find::find(sub { push @test_files, $File::Find::name if -f && /\.(t|pm)$/ }, 't');
+
+	my @omit = (@{ $opts{omit} || [] }, keys %{ $self->{meta}->provides });
+	my $runtime = scan_files(\@runtime_files, \@omit);
+	my $test = scan_files(\@test_files, \@omit);
+
+	my $prereqs = CPAN::Meta::Prereqs->new({
+		runtime   => { requires => $runtime->as_string_hash },
+		test      => { requires => $test->as_string_hash },
+		configure => { requires => { 'Module::Build::Tiny' => mbt_version() } },
+		develop   => { requires => { 'App::ModuleBuildTiny' => $VERSION } },
+	});
+	require CPAN::Meta::Prereqs::Filter;
+	return CPAN::Meta::Prereqs::Filter::filter_prereqs($prereqs, %opts);
+}
+
 sub load_prereqs {
 	my @prereqs;
 	if (-f 'prereqs.json') {
@@ -177,7 +211,6 @@ sub new {
 
 		my $prereqs = load_prereqs();
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
-		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} //= $VERSION;
 
 		my $metahash = {
 			name           => $distname,

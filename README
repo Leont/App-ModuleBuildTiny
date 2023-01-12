@@ -25,10 +25,6 @@ SEE ALSO
 
  Helpers
 
-      * scan-prereqs-cpanfile
-
-      A tool to automatically generate a cpanfile for you.
-
       * perl-reversion
       <https://metacpan.org/pod/distribution/Perl-Version/examples/perl-reversion>
 
