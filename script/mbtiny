@@ -10,10 +10,6 @@ modulebuildtiny(@ARGV);
 
 mbtiny - A standalone authoring script for Module::Build::Tiny
 
-=head1 VERSION
-
-version 0.029
-
 =head1 SYNOPSIS
 
  mbtiny listdeps | cpanm

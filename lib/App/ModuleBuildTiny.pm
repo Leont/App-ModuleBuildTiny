@@ -290,10 +290,6 @@ sub modulebuildtiny {
 
 App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
 
-=head1 VERSION
-
-version 0.029
-
 =head1 DESCRIPTION
 
 App::ModuleBuildTiny contains the implementation of the L<mbtiny> tool.
