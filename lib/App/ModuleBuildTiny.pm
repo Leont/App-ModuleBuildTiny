@@ -28,7 +28,7 @@ use App::ModuleBuildTiny::Dist;
 
 use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $EXTENDED_TESTING $NONINTERACTIVE_TESTING $SHELL $HOME $USERPROFILE/;
 
-Getopt::Long::Configure(qw/require_order pass_through gnu_compat/);
+Getopt::Long::Configure(qw/require_order gnu_compat/);
 
 sub prompt {
 	my($mess, $def) = @_;
@@ -123,7 +123,7 @@ my @config_items = (
 my %actions = (
 	dist => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		my $name = $dist->meta->name . '-' . $dist->meta->version;
@@ -133,7 +133,7 @@ my %actions = (
 	},
 	distdir => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		$dist->write_dir($dist->meta->name . '-' . $dist->meta->version, $opts{verbose});
@@ -143,13 +143,13 @@ my %actions = (
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
-			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING);
+			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		return $dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/) or exit 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
@@ -166,19 +166,19 @@ my %actions = (
 	run => sub {
 		my @arguments = @_;
 		croak "No arguments given to run" if not @arguments;
-		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1));
+		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
 		return $dist->run(command => \@arguments, build => $build);
 	},
 	shell => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, 'build!' => \my $build);
+		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
 		return $dist->run(command => [ $SHELL ], build => $build);
 	},
 	listdeps => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new;
 
 		require CPAN::Meta::Prereqs::Filter;
@@ -207,7 +207,7 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/);
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/) or exit 2;
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 		if ($opts{bump}) {
@@ -225,7 +225,7 @@ my %actions = (
 	scan => sub {
 		my @arguments = @_;
 		my %opts = (sanitize => 1);
-		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize omit=s@/);
+		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize omit=s@/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
 		my $prereqs = $dist->scan_prereqs(%opts);
 		write_json('prereqs.json', $prereqs->as_string_hash);
@@ -281,7 +281,7 @@ my %actions = (
 			version => '0.001',
 			dirname => $distname,
 		);
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s version=s abstract=s license=s dirname=s/);
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s version=s abstract=s license=s dirname=s/) or exit 2;
 
 		my $license = create_license_for(delete $args{license}, $args{author});
 
