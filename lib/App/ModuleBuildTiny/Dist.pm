@@ -3,7 +3,7 @@ package App::ModuleBuildTiny::Dist;
 use 5.010;
 use strict;
 use warnings;
-our $VERSION = '0.029';
+our $VERSION = '0.030';
 
 use CPAN::Meta;
 use Carp qw/croak/;

@@ -3,7 +3,7 @@ package App::ModuleBuildTiny;
 use 5.010;
 use strict;
 use warnings;
-our $VERSION = '0.029';
+our $VERSION = '0.030';
 
 use Exporter 5.57 'import';
 our @EXPORT = qw/modulebuildtiny/;
