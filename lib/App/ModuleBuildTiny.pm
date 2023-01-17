@@ -1,6 +1,6 @@
 package App::ModuleBuildTiny;
 
-use 5.010;
+use 5.014;
 use strict;
 use warnings;
 our $VERSION = '0.030';
@@ -58,8 +58,7 @@ sub fill_in {
 
 sub write_module {
 	my %opts = @_;
-	my $template = get_data_section('Module.pm');
-	$template =~ s/ ^ % (\w+) /=$1/gxms;
+	my $template = get_data_section('Module.pm') =~ s/ ^ % (\w+) /=$1/gxmsr;
 	my $filename = catfile('lib', split /::/, $opts{module_name}) . '.pm';
 	my $content = fill_in($template, \%opts);
 	mkpath(dirname($filename));
@@ -287,7 +286,7 @@ my %actions = (
 
 		mkdir $args{dirname};
 		chdir $args{dirname};
-		($args{module_name} = $distname) =~ s/-/::/g; # 5.014 for s///r?
+		$args{module_name} = $distname =~ s/-/::/gr;
 
 		write_module(%args, notice => $license->notice);
 		write_text('LICENSE', $license->fulltext);

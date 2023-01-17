@@ -41,7 +41,7 @@
          "Pod::Simple::Text" : "3.23",
          "Software::LicenseUtils" : "0.103014",
          "Text::Template" : "0",
-         "perl" : "5.010",
+         "perl" : "5.014",
          "strict" : "0",
          "warnings" : "0"
       }

@@ -1,6 +1,6 @@
 package App::ModuleBuildTiny::Dist;
 
-use 5.010;
+use 5.014;
 use strict;
 use warnings;
 our $VERSION = '0.030';
@@ -82,9 +82,7 @@ sub load_mergedata {
 sub distname {
 	my $extra = shift;
 	return delete $extra->{name} if defined $extra->{name};
-	my $distname = basename(rel2abs('.'));
-	$distname =~ s/(?:^(?:perl|p5)-|[\-\.]pm$)//x;
-	return $distname;
+	return basename(rel2abs('.')) =~ s/ (?: ^ (?: perl|p5 ) - | [\-\.]pm $ )//xr;
 }
 
 sub detect_license {
@@ -128,7 +126,7 @@ sub checkchanges {
 
 sub checkmeta {
 	my $self = shift;
-	(my $module_name = $self->{meta}->name) =~ s/-/::/g;
+	my $module_name = $self->{meta}->name =~ s/-/::/gr;
 	my $meta_version = $self->{meta}->version;
 	my $detected_version = $self->{data}->version($module_name);
 	die sprintf "Version mismatch between module and meta, did you forgot to run regenerate? (%s versus %s)", $detected_version, $meta_version if $detected_version != $meta_version;
@@ -180,6 +178,7 @@ sub load_prereqs {
 		require Module::CPANfile;
 		push @prereqs, Module::CPANfile->load('cpanfile')->prereq_specs;
 	}
+
 	if (@prereqs == 1) {
 		return $prereqs[0];
 	}
