@@ -117,7 +117,8 @@ sub detect_license {
 }
 
 sub checkchanges {
-	my $version = quotemeta shift;
+	my $self = shift;
+	my $version = quotemeta $self->meta->version;
 	open my $changes, '<:raw', 'Changes' or die "Couldn't open Changes file";
 	my (undef, @content) = grep { / ^ $version (?:-TRIAL)? (?:\s+|$) /x ... /^\S/ } <$changes>;
 	pop @content while @content && $content[-1] =~ / ^ (?: \S | \s* $ ) /x;
@@ -306,8 +307,6 @@ sub write_tarball {
 	my ($self, $name) = @_;
 	require Archive::Tar;
 	my $arch = Archive::Tar->new;
-	checkchanges($self->meta->version);
-	$self->checkmeta();
 	for my $filename ($self->files) {
 		$arch->add_data($filename, $self->get_file($filename), { mode => oct '0644'} );
 	}

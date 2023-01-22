@@ -125,6 +125,8 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
+		$dist->checkchanges;
+		$dist->checkmeta;
 		my $name = $dist->meta->name . '-' . $dist->meta->version;
 		printf "tar czf $name.tar.tz %s\n", join ' ', $dist->files if $opts{verbose};
 		$dist->write_tarball($name);
@@ -151,6 +153,8 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/) or exit 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
+		$dist->checkchanges;
+		$dist->checkmeta;
 		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
 
 		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
