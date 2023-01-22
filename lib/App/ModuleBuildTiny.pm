@@ -224,7 +224,7 @@ my %actions = (
 	scan => sub {
 		my @arguments = @_;
 		my %opts = (sanitize => 1);
-		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize omit=s@/) or exit 2;
+		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize! omit=s@/) or exit 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
 		my $prereqs = $dist->scan_prereqs(%opts);
 		write_json('prereqs.json', $prereqs->as_string_hash);
