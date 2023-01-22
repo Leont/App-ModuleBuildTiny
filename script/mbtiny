@@ -94,9 +94,7 @@ A C<metamerge.json> or C<metamerge.yml> file can be used to merge any additional
 
 =head1 SUBCOMMANDS
 
-=over 4
-
-=item * test
+=head2 test
 
 This runs all of the tests of a distribution. It takes two options that can both be negated:
 
@@ -112,7 +110,7 @@ Run author tests. Defaults to true.
 
 =back
 
-=item * run
+=head2 run
 
 Run the specified command in a build distribution. It takes one boolean argument:
 
@@ -124,13 +122,13 @@ This will cause mbtiny not to build the distribution before running the command.
 
 =back
 
-=item * upload
+=head2 upload
 
 This builds a tarball and uploads it to CPAN.
 
 Using a L<Config::Identity|Config::Identity> compatible F<.pause> file in your home directory is recommended, but if it's absent or incomplete your credentials will be asked on the console.
 
-=item * shell
+=head2 shell
 
 Runs the C<$SHELL>, this is equivalent to C<mbtiny run --no-build $SHELL>. It takes one argument.
 
@@ -142,19 +140,19 @@ This will cause mbtiny to build the distribution before running the shell.
 
 =back
 
-=item * dist
+=head2 dist
 
 This creates a distribution tarball.
 
-=item * distdir
+=head2 distdir
 
 This creates a directory containing all of the files of the distribution.
 
-=item * listdeps
+=head2 listdeps
 
 List all dependencies of this distribution. By default it prints a list of modules. If the C<json> option option is given, it's printed as JSON instead.
 
-=item * scan
+=head2 scan
 
 This will scan the C<lib/>, C<script/> and C<t/> directories for dependencies and writes them to C<prereqs.json>. It accepts the following option:
 
@@ -170,9 +168,9 @@ This will omit a specific from the dependencies, it can be specified multiple ti
 
 =back
 
-=item * regenerate <files>
+=head2 regenerate <files>
 
-This regenerates the given files. If no files are given, it defaults to the six files it can regenerate: F<Build.PL>, F<MANIFEST>, F<META.json> F<META.yml>, F<LICENSE> and F<README>. You usually want to do this after bumping the version of a module, adding a dependency or adding a file.
+This regenerates the given files. If no files are given, it defaults to the six files it can regenerate: F<Build.PL>, F<MANIFEST>, F<META.json> F<META.yml>, F<LICENSE> and F<README>. You usually want to do this when bumping the version of a module.
 
 =over 4
 
@@ -182,7 +180,7 @@ If this flag is given the version of the modules will be bumped during this rege
 
 =item * version = <version>
 
-When bumping this sets the new version to a specific value instead of deriving it from the current version.
+Set the new version to a specific value instead of deriving it from the current version.
 
 =item * trial
 
@@ -198,7 +196,7 @@ This will prevent the modules from being modified, this is useful with the verbo
 
 =back
 
-=item * mint <distribution>
+=head2 mint <distribution>
 
 This creates a new distribution. It takes one mandatory positional argument, the name of the new distribution, and up to five optional named arguments
 
@@ -230,7 +228,7 @@ The initial version of the new distribution. This defaults to C<0.001>.
 
 =back
 
-=item * configure <type>
+=head2 configure <type>
 
 This creates or update your configuration file (at F<~/.mbtiny/config>). It takes one optional position argument that can take any of the following values:
 
@@ -251,7 +249,5 @@ This lists your current configuration.
 =item * reset
 
 This removes the current configuration file.
-
-=back
 
 =back
