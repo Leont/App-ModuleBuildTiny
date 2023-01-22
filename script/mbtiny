@@ -92,18 +92,6 @@ A C<metamerge.json> or C<metamerge.yml> file can be used to merge any additional
 
 =back
 
-=head1 WORKFLOWS
-
-It supports two different workflows, which I call Feedback and Generator.
-
-=head2 Feedback
-
-In this workflow you're commiting the generated files to the filesystem/repository, in particular using the C<regenerate> command.
-
-=head2 Generator
-
-In this workflow the generated files aren't written back to the file system, instead they are generated on every mbtiny command.
-
 =head1 SUBCOMMANDS
 
 =over 4
