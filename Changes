@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Make configuration optional for minting
+          - Add prompt before release
           - Remove VERSION section from template
           - Make "configure all" default to current values
 

@@ -152,14 +152,18 @@ my %actions = (
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
-		my $trial =  $dist->release_status eq 'testing' && $dist->version !~ /_/;
-		my $name = $dist->meta->name . '-' . $dist->meta->version . ($trial ? '-TRIAL' : '' );
-		my $file = $dist->write_tarball($name);
-		require CPAN::Upload::Tiny;
-		CPAN::Upload::Tiny->VERSION('0.009');
-		my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($opts{config});
-		$uploader->upload_file($file);
-		print "Successfully uploaded $file\n" if not $opts{silent};
+
+		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
+		if (lc $sure eq 'y') {
+			my $trial =  $dist->release_status eq 'testing' && $dist->version !~ /_/;
+			my $name = $dist->meta->name . '-' . $dist->meta->version . ($trial ? '-TRIAL' : '' );
+			my $file = $dist->write_tarball($name);
+			require CPAN::Upload::Tiny;
+			CPAN::Upload::Tiny->VERSION('0.009');
+			my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($opts{config});
+			$uploader->upload_file($file);
+			print "Successfully uploaded $file\n" if not $opts{silent};
+		}
 		return 0;
 	},
 	run => sub {
