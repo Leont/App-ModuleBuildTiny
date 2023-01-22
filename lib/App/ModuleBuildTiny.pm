@@ -85,7 +85,7 @@ sub write_readme {
 	write_text('README', fill_in($template, \%opts));
 }
 
-sub get_config {
+sub get_config_file {
 	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
 	return catfile(glob('~'), qw/.mbtiny conf/);
 }
@@ -231,7 +231,7 @@ my %actions = (
 	},
 	configure => sub {
 		my @arguments = @_;
-		my $config_file = get_config();
+		my $config_file = get_config_file();
 
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
 
@@ -267,10 +267,8 @@ my %actions = (
 	mint => sub {
 		my @arguments = @_;
 
-		my $config_file = get_config();
-		croak "No config file present, please run mbtiny configure" if not -f $config_file;
-		my $config = read_json($config_file);
-		croak "Config not readable, please run mbtiny configure" if not defined $config;
+		my $config_file = get_config_file();
+		my $config = -f $config_file ? read_json($config_file) // {} : {};
 
 		my $distname = decode_utf8(shift @arguments || croak 'No distribution name given');
 		croak "Directory $distname already exists" if -e $distname;
@@ -279,8 +277,14 @@ my %actions = (
 			%{ $config },
 			version => '0.001',
 			dirname => $distname,
+			abstract => 'INSERT YOUR ABSTRACT HERE',
 		);
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s version=s abstract=s license=s dirname=s/) or exit 2;
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s/) or exit 2;
+		for my $item (@config_items) {
+			my ($key, $description, $default) = @{$item};
+			next if defined $args{$key};
+			$args{$key} = prompt($description, $default);
+		}
 
 		my $license = create_license_for(delete $args{license}, $args{author});
 
