@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Make configuration optional for minting
+          - Remove VERSION section from template
 
 0.030     Mon Jan 16 12:16:05 AM CET 2023
           - Allow for multiple prereq files

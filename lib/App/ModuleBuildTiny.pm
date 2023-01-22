@@ -388,10 +388,6 @@ our $VERSION = '{{ $version }}';
 
 {{ $module_name }} - {{ $abstract }}
 
-%head1 VERSION
-
-{{ $version }}
-
 %head1 DESCRIPTION
 
 Write a full description of the module and its features here.
