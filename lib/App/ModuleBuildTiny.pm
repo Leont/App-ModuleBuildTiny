@@ -122,7 +122,7 @@ my @config_items = (
 my %actions = (
 	dist => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or exit 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		$dist->checkchanges;
@@ -134,7 +134,7 @@ my %actions = (
 	},
 	distdir => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or exit 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		$dist->write_dir($dist->meta->name . '-' . $dist->meta->version, $opts{verbose});
@@ -144,13 +144,13 @@ my %actions = (
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
-			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or exit 2;
+			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		return $dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/) or exit 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/) or return 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->checkchanges;
@@ -173,19 +173,19 @@ my %actions = (
 	run => sub {
 		my @arguments = @_;
 		croak "No arguments given to run" if not @arguments;
-		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or exit 2;
+		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
 		return $dist->run(command => \@arguments, build => $build);
 	},
 	shell => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or exit 2;
+		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
 		return $dist->run(command => [ $SHELL ], build => $build);
 	},
 	listdeps => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/) or exit 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/json only_missing|only-missing|missing omit_core|omit-core=s author versions/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new;
 
 		require CPAN::Meta::Prereqs::Filter;
@@ -214,7 +214,7 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/) or exit 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/) or return 2;
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 		if ($opts{bump}) {
@@ -232,10 +232,11 @@ my %actions = (
 	scan => sub {
 		my @arguments = @_;
 		my %opts = (sanitize => 1);
-		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize! omit=s@/) or exit 2;
+		GetOptionsFromArray(\@arguments, \%opts, qw/omit_core|omit-core=s sanitize! omit=s@/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
 		my $prereqs = $dist->scan_prereqs(%opts);
 		write_json('prereqs.json', $prereqs->as_string_hash);
+		return 0;
 	},
 	configure => sub {
 		my @arguments = @_;
@@ -287,7 +288,7 @@ my %actions = (
 			dirname => $distname,
 			abstract => 'INSERT YOUR ABSTRACT HERE',
 		);
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s/) or exit 2;
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s/) or return 2;
 		for my $item (@config_items) {
 			my ($key, $description, $default) = @{$item};
 			next if defined $args{$key};
