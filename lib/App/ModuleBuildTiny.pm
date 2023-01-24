@@ -128,7 +128,7 @@ my %actions = (
 		$dist->checkchanges;
 		$dist->checkmeta;
 		my $name = $dist->meta->name . '-' . $dist->meta->version;
-		printf "tar czf $name.tar.tz %s\n", join ' ', $dist->files if $opts{verbose};
+		printf "tar czf $name.tar.gz %s\n", join ' ', $dist->files if $opts{verbose};
 		$dist->write_tarball($name);
 		return 0;
 	},
