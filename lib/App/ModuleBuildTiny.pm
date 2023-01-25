@@ -213,7 +213,7 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run/) or return 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run|dry-run/) or return 2;
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 		if ($opts{bump}) {
