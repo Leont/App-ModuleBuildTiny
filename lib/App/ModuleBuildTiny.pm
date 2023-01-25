@@ -351,7 +351,7 @@ An extremely powerful but somewhat heavy authoring tool.
 
 =item * L<Minilla|Minilla>
 
-A more minimalistic but still somewhat customizable authoring tool.
+A more minimalistic than Dist::Zilla but still somewhat customizable authoring tool.
 
 =back
 
