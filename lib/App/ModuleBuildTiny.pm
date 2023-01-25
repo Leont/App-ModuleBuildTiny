@@ -220,11 +220,11 @@ my %actions = (
 			bump_versions(%opts);
 		}
 
-		if (!$opts{dry_run}) {
-			my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
-			for my $filename ($dist->files) {
-				write_binary($filename, $dist->get_file($filename)) if $dist->is_generated($filename);
-			}
+		my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
+		my @generated = grep { $files{$_} } $dist->files;
+		for my $filename (@generated) {
+			say "Updating $filename" if $opts{verbose};
+			write_binary($filename, $dist->get_file($filename)) if !$opts{dry_run};
 		}
 		return 0;
 	},

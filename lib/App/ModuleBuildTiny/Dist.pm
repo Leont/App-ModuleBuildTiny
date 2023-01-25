@@ -326,12 +326,6 @@ sub get_file {
 	return $raw ? encode_utf8($raw) : read_binary($filename);
 }
 
-sub is_generated {
-	my ($self, $filename) = @_;
-	return if not exists $self->{files}{$filename};
-	return length $self->{files}{$filename};
-}
-
 sub run {
 	my ($self, %opts) = @_;
 	require File::Temp;
