@@ -30,7 +30,6 @@ requires:
   CPAN::Meta::Merge: '0'
   CPAN::Meta::Prereqs::Filter: '0'
   CPAN::Upload::Tiny: '0.009'
-  Carp: '0'
   Config: '0'
   Data::Section::Simple: '0'
   Encode: '0'

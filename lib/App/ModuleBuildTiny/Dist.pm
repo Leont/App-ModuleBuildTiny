@@ -6,7 +6,6 @@ use warnings;
 our $VERSION = '0.030';
 
 use CPAN::Meta;
-use Carp qw/croak/;
 use Config;
 use Encode qw/encode_utf8 decode_utf8/;
 use File::Basename qw/basename dirname/;
@@ -57,7 +56,7 @@ sub distfilename {
 sub generate_readme {
 	my $distname = shift;
 	my $filename = distfilename($distname);
-	croak "Main module file $filename doesn't exist" if not -f $filename;
+	die "Main module file $filename doesn't exist\n" if not -f $filename;
 	my $parser = Pod::Simple::Text->new;
 	$parser->output_string( \my $content );
 	$parser->parse_characters(1);
@@ -92,7 +91,7 @@ sub detect_license {
 		Software::LicenseUtils->VERSION(0.103014);
 		my $spec_version = $mergedata->{'meta-spec'} && $mergedata->{'meta-spec'}{version} ? $mergedata->{'meta-spec'}{version} : 2;
 		my @guess = Software::LicenseUtils->guess_license_from_meta_key($mergedata->{license}[0], $spec_version);
-		croak "Couldn't parse license from metamerge: @guess" if @guess > 1;
+		die "Couldn't parse license from metamerge: @guess\n" if @guess > 1;
 		if (@guess) {
 			my $class = $guess[0];
 			require_module($class);
@@ -107,13 +106,13 @@ sub detect_license {
 		my $content = "=head1 LICENSE\n" . $license_pod;
 		my @guess = Software::LicenseUtils->guess_license_from_pod($content);
 		next if not @guess;
-		croak "Couldn't parse license from $license_section in $filename: @guess" if @guess != 1;
+		die "Couldn't parse license from $license_section in $filename: @guess\n" if @guess != 1;
 		my $class = $guess[0];
 		my ($year) = $license_pod =~ /.*? copyright .*? ([\d\-]+)/;
 		require_module($class);
 		return $class->new({holder => join(', ', @{$authors}), year => $year});
 	}
-	croak "No license found in $filename";
+	die "No license found in $filename\n";
 }
 
 sub checkchanges {

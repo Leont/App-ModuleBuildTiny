@@ -8,7 +8,6 @@ our $VERSION = '0.030';
 use Exporter 5.57 'import';
 our @EXPORT = qw/modulebuildtiny/;
 
-use Carp qw/croak/;
 use Config;
 use CPAN::Meta;
 use Data::Section::Simple 'get_data_section';
@@ -172,7 +171,7 @@ my %actions = (
 	},
 	run => sub {
 		my @arguments = @_;
-		croak "No arguments given to run" if not @arguments;
+		die "No arguments given to run\n" if not @arguments;
 		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
 		return $dist->run(command => \@arguments, build => $build);
@@ -279,8 +278,8 @@ my %actions = (
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) // {} : {};
 
-		my $distname = decode_utf8(shift @arguments || croak 'No distribution name given');
-		croak "Directory $distname already exists" if -e $distname;
+		my $distname = decode_utf8(shift @arguments || die "No distribution name given\n");
+		die "Directory $distname already exists\n" if -e $distname;
 
 		my %args = (
 			%{ $config },
@@ -312,9 +311,9 @@ my %actions = (
 
 sub modulebuildtiny {
 	my ($action, @arguments) = @_;
-	croak 'No action given' unless defined $action;
+	die "No action given\n" unless defined $action;
 	my $call = $actions{$action};
-	croak "No such action '$action' known\n" if not $call;
+	die "No such action '$action' known\n" if not $call;
 	return $call->(@arguments);
 }
 
