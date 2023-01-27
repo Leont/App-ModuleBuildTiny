@@ -243,12 +243,21 @@ my %actions = (
 
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
 
+		my $save = sub {
+			my ($config, $key, $value) = @_;
+			if (length $value and $value ne '-') {
+				$config->{$key} = $value;
+			}
+			else {
+				delete $config->{$key};
+			}
+		};
 		if ($mode eq 'upgrade') {
 			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
 				my ($key, $description, $default) = @{$item};
 				next if defined $config->{$key};
-				$config->{$key} = prompt($description, $default);
+				$save->($config, $key, prompt($description, $default));
 			}
 			write_json($config_file, $config);
 		}
@@ -256,7 +265,7 @@ my %actions = (
 			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
 				my ($key, $description, $default) = @{$item};
-				$config->{$key} = prompt($description, $config->{$key} // $default);
+				$save->($config, $key, prompt($description, $config->{$key} // $default));
 			}
 			write_json($config_file, $config);
 		}
