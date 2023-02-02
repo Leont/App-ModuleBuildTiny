@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Correctly run author and release tests on upload.
+          - Update Changes file on regenerate --bump
 
 0.031     Thu Feb  2 02:35:19 PM CET 2023
           - Make configuration optional for minting

@@ -219,6 +219,7 @@ my %actions = (
 
 		if ($opts{bump}) {
 			bump_versions(%opts);
+			$files{Changes}++;
 		}
 
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);

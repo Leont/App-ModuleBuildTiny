@@ -12,8 +12,9 @@ use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
-use File::Slurper qw/write_text read_binary/;
+use File::Slurper qw/write_text read_text read_binary/;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
+use POSIX 'strftime';
 use Module::Runtime 'require_module';
 use Module::Metadata 1.000037;
 
@@ -275,6 +276,11 @@ sub new {
 	$files{'META.yml'} //= $meta->as_string({ version => 1.4 });
 	$files{LICENSE} //= $license->fulltext;
 	$files{README} //= generate_readme($dist_name);
+	if ($opts{regenerate}{Changes}) {
+		my $time = strftime("%Y-%m-%d %H:%M:%S%z", localtime);
+		my $header = sprintf "%-9s %s\n", $meta->version, $time;
+		$files{Changes} = read_text('Changes') =~ s/(?<=\n\n)/$header/er;
+	}
 	# This must come last
 	$files{MANIFEST} //= join '', map { "$_\n" } sort keys %files;
 
