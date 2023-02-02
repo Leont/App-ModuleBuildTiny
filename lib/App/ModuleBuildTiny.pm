@@ -154,6 +154,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->checkchanges;
 		$dist->checkmeta;
+		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
 		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
 
 		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
