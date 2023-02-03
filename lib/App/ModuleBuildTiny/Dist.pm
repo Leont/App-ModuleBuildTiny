@@ -116,7 +116,7 @@ sub detect_license {
 	die "No license found in $filename\n";
 }
 
-sub checkchanges {
+sub check_changes {
 	my $self = shift;
 	my $version = quotemeta $self->meta->version;
 	open my $changes, '<:raw', 'Changes' or die "Couldn't open Changes file";
@@ -125,7 +125,7 @@ sub checkchanges {
 	die "Changes appears to be empty\n" if not @content
 }
 
-sub checkmeta {
+sub check_meta {
 	my $self = shift;
 	my $module_name = $self->{meta}->name =~ s/-/::/gr;
 	my $meta_version = $self->{meta}->version;
