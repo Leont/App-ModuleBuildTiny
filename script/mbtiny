@@ -289,8 +289,8 @@ A C<metamerge.json> or C<metamerge.yml> file can be used to merge any additional
  # metamerge.yml
  resources:
    bugtracker:
-     web: 'https://github.com/leont/app-modulebuildtiny/issues'
-   homepage: 'http://example.org/'
-   x_IRC: 'irc://irc.perl.org/#toolchain'
+     web: https://github.com/leont/App-ModuleBuildTiny/issues
+   homepage: http://example.org/
+   x_IRC: irc://irc.perl.org/#toolchain
 
 =back
