@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add documentation for --commit, --tag and --push
+
 0.032     2023-02-03 20:16:39+0100
           - Correctly run author and release tests on upload.
           - Update Changes file on regenerate --bump

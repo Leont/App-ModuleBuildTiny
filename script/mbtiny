@@ -43,6 +43,10 @@ Set the version of the distribution before regenerating.
 
 Make the new version a trial version.
 
+=item * commit
+
+Create a commit for the version bump.
+
 =item * verbose
 
 This will make regeneration more verbose.
@@ -90,6 +94,14 @@ This assembles a tarball and uploads it to CPAN.
 Using a L<Config::Identity|Config::Identity> compatible F<.pause> file in your home directory is recommended, but if it's absent or incomplete your credentials will be asked on the console.
 
 =over 4
+
+=item * tag
+
+Tag the current release with the current version.
+
+=item * push
+
+Push the current commit, and tag it C<--tag> is also specified.
 
 =item * silent
 
