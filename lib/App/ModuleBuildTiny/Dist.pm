@@ -116,13 +116,18 @@ sub detect_license {
 	die "No license found in $filename\n";
 }
 
-sub check_changes {
+sub get_changes {
 	my $self = shift;
 	my $version = quotemeta $self->meta->version;
 	open my $changes, '<:raw', 'Changes' or die "Couldn't open Changes file";
 	my (undef, @content) = grep { / ^ $version (?:-TRIAL)? (?:\s+|$) /x ... /^\S/ } <$changes>;
 	pop @content while @content && $content[-1] =~ / ^ (?: \S | \s* $ ) /x;
-	die "Changes appears to be empty\n" if not @content
+	return @content;
+}
+
+sub check_changes {
+	my $self = shift;
+	die "Changes appears to be empty\n" if not $self->get_changes;
 }
 
 sub check_meta {

@@ -214,7 +214,7 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run|dry-run/) or return 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run|dry-run commit/) or return 2;
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 		if ($opts{bump}) {
@@ -227,6 +227,24 @@ my %actions = (
 		for my $filename (@generated) {
 			say "Updating $filename" if $opts{verbose};
 			write_binary($filename, $dist->get_file($filename)) if !$opts{dry_run};
+		}
+
+		if ($opts{commit}) {
+			require Git::Wrapper;
+			my $git = Git::Wrapper->new('.');
+			my @files = keys %files;
+			push @files, 'lib' if $opts{bump};
+			my $allowed = join '|', map qr{^\Q$_\E$}, @files;
+			my @modified = grep /$allowed/, $git->ls_files({ modified => 1 });
+
+			if (@modified) {
+				my @changes = $dist->get_changes;
+				my $version = 'v' . $dist->version;
+				my $message = join '', $version, "\n\n", @changes;
+				$git->commit({ m => $message }, @files);
+			} else {
+				say "No modifications to commit";
+			}
 		}
 		return 0;
 	},
