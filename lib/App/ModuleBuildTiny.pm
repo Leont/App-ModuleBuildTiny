@@ -171,7 +171,6 @@ my %actions = (
 			if ($opts{tag}) {
 				require Git::Wrapper;
 				my $git = Git::Wrapper->new('.');
-				say for $git->ls_files;
 				my $version = 'v' . $dist->version;
 				$git->tag('-m' => $version, $version);
 			}
