@@ -161,7 +161,6 @@ sub scan_prereqs {
 		runtime   => { requires => $runtime->as_string_hash },
 		test      => { requires => $test->as_string_hash },
 		configure => { requires => { 'Module::Build::Tiny' => mbt_version() } },
-		develop   => { requires => { 'App::ModuleBuildTiny' => $VERSION } },
 	});
 	require CPAN::Meta::Prereqs::Filter;
 	return CPAN::Meta::Prereqs::Filter::filter_prereqs($prereqs, %opts);
@@ -211,6 +210,7 @@ sub new {
 
 		my $prereqs = load_prereqs();
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
+		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} //= $VERSION;
 
 		my $metahash = {
 			name           => $distname,

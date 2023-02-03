@@ -21,7 +21,7 @@
       },
       "develop" : {
          "requires" : {
-            "App::ModuleBuildTiny" : "0.030"
+            "App::ModuleBuildTiny" : "0.031"
          }
       },
       "runtime" : {
