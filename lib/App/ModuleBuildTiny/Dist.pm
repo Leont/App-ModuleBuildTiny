@@ -13,6 +13,7 @@ use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
 use File::Slurper qw/write_text read_text read_binary/;
+use File::chdir;
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use POSIX 'strftime';
 use Module::Runtime 'require_module';
@@ -342,7 +343,7 @@ sub run {
 	require File::Temp;
 	my $dir  = File::Temp::tempdir(CLEANUP => 1);
 	$self->write_dir($dir, $opts{verbose});
-	chdir $dir;
+	local $CWD = $dir;
 	if ($opts{build}) {
 		system $Config{perlpath}, 'Build.PL';
 		system $Config{perlpath}, 'Build';
