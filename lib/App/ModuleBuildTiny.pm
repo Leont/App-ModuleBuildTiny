@@ -149,7 +149,7 @@ my %actions = (
 	},
 	upload => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent/) or return 2;
+		GetOptionsFromArray(\@arguments, \my %opts, qw/trial config=s silent tag push:s/) or return 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->check_changes;
@@ -167,6 +167,23 @@ my %actions = (
 			my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($opts{config});
 			$uploader->upload_file($file);
 			print "Successfully uploaded $file\n" if not $opts{silent};
+
+			if ($opts{tag}) {
+				require Git::Wrapper;
+				my $git = Git::Wrapper->new('.');
+				say for $git->ls_files;
+				my $version = 'v' . $dist->version;
+				$git->tag('-m' => $version, $version);
+			}
+
+			if (defined $opts{push}) {
+				require Git::Wrapper;
+				my $git = Git::Wrapper->new('.');
+
+				my @remote = length $opts{push} ? $opts{push} : ();
+				$git->push(@remote);
+				$git->push({ tags => 1 }, @remote) if $opts{tag};
+			}
 		}
 		return 0;
 	},
