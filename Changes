@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Allow putting metadata in .pod instead of .pm
+
 0.033     2023-02-05 17:05:51+0100
           - Add xt test running to test command
           - Add documentation for --commit, --tag and --push
