@@ -16,7 +16,7 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath/;
 use File::Slurper qw/write_text write_binary read_binary/;
-use File::Spec::Functions qw/catfile catdir rel2abs/;
+use File::Spec::Functions qw/catfile catdir curdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 use JSON::PP qw/decode_json/;
 use Module::Runtime 'require_module';
@@ -145,7 +145,7 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
 			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new;
-		return $dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1);
+		return $dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
@@ -155,7 +155,7 @@ my %actions = (
 		$dist->check_changes;
 		$dist->check_meta;
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
-		$dist->run(command => [ $Config{perlpath}, 'Build', 'test' ], build => 1) or return 1;
+		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1) or return 1;
 
 		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
 		if (lc $sure eq 'y') {
