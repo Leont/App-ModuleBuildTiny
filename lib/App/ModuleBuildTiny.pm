@@ -257,7 +257,10 @@ my %actions = (
 			require Git::Wrapper;
 			my $git = Git::Wrapper->new('.');
 			my @files = keys %files;
-			push @files, 'lib' if $opts{bump};
+			if ($opts{bump}) {
+				push @files, 'lib';
+				push @files, 'script' if -d 'script';
+			}
 			my $allowed = join '|', map qr{^\Q$_\E$}, @files;
 			my @modified = grep /$allowed/, $git->ls_files({ modified => 1 });
 
