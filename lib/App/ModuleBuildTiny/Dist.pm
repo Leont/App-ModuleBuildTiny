@@ -350,9 +350,11 @@ sub run {
 		my @extralib = map { rel2abs(catdir('blib', $_)) } 'arch', 'lib';
 		local @PERL5LIB = (@extralib, @PERL5LIB);
 		local @PATH = (rel2abs(catdir('blib', 'script')), @PATH);
+		say join ' ', @{ $opts{command} } if $opts{verbose};
 		return not system @{ $opts{command} };
 	}
 	else {
+		say join ' ', @{ $opts{command} } if $opts{verbose};
 		return not system @{ $opts{command} };
 	}
 }

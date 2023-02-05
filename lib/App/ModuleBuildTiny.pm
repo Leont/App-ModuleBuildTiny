@@ -153,7 +153,7 @@ my %actions = (
 		push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
 		@dirs = grep -e, @dirs;
 		my $dist = App::ModuleBuildTiny::Dist->new;
-		return $dist->run(command => [ 'prove', '-br', @dirs ], build => 1);
+		return $dist->run(command => [ 'prove', '-br', @dirs ], build => 1, verbose => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
@@ -163,7 +163,7 @@ my %actions = (
 		$dist->check_changes;
 		$dist->check_meta;
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
-		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1) or return 1;
+		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1, verbose => !$opts{silent}) or return 1;
 
 		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
 		if (lc $sure eq 'y') {
@@ -199,13 +199,13 @@ my %actions = (
 		die "No arguments given to run\n" if not @arguments;
 		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
-		return $dist->run(command => \@arguments, build => $build);
+		return $dist->run(command => \@arguments, build => $build, verbose => 1);
 	},
 	shell => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
-		return $dist->run(command => [ $SHELL ], build => $build);
+		return $dist->run(command => [ $SHELL ], build => $build, verbose => 0);
 	},
 	listdeps => sub {
 		my @arguments = @_;
