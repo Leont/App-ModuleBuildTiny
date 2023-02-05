@@ -61,8 +61,8 @@ requires:
   warnings: '0'
 resources:
   IRC: irc://irc.perl.org/#toolchain
-  bugtracker: https://github.com/Leont/app-modulebuildtiny/issues
-  repository: https://github.com/Leont/app-modulebuildtiny.git
+  bugtracker: https://github.com/Leont/App-ModuleBuildTiny/issues
+  repository: https://github.com/Leont/App-ModuleBuildTiny.git
 version: '0.033'
 x_serialization_backend: 'CPAN::Meta::YAML version 0.018'
 x_spdx_expression: 'Artistic-1.0-Perl OR GPL-1.0-or-later'
