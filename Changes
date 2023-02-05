@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add xt test running to test command
           - Add documentation for --commit, --tag and --push
 
 0.032     2023-02-03 20:16:39+0100

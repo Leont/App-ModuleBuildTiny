@@ -144,8 +144,16 @@ my %actions = (
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
 			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or return 2;
+		my @dirs = 't';
+		if ($AUTHOR_TESTING) {
+			push @dirs, catdir('xt', 'author');
+			push @dirs, glob 'xt/*.t';
+		}
+		push @dirs, catdir('xt', 'release') if $RELEASE_TESTING;
+		push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
+		@dirs = grep -e, @dirs;
 		my $dist = App::ModuleBuildTiny::Dist->new;
-		return $dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1);
+		return $dist->run(command => [ 'prove', '-br', @dirs ], build => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
