@@ -43,6 +43,15 @@ sub prompt {
 	return $ans ne '' ? decode_utf8($ans) : $def // '';
 }
 
+sub prompt_yn {
+	my ($description, $default) = @_;
+	my $result;
+	do {
+		$result = prompt("$description [y/n]", $default);
+	} while (length $result and $result !~ /^(y|n|-)/i);
+	return lc substr $result, 0 , 1;
+}
+
 sub create_license_for {
 	my ($license_name, $author) = @_;
 	my $module = "Software::License::$license_name";
@@ -165,8 +174,8 @@ my %actions = (
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
 		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1, verbose => !$opts{silent}) or return 1;
 
-		my $sure = prompt('Do you want to continue the release process? y/n', 'n');
-		if (lc $sure eq 'y') {
+		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
+		if ($sure eq 'y') {
 			my $trial =  $dist->release_status eq 'testing' && $dist->version !~ /_/;
 			my $name = $dist->meta->name . '-' . $dist->meta->version . ($trial ? '-TRIAL' : '' );
 			my $file = $dist->write_tarball($name);
