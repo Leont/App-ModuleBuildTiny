@@ -357,7 +357,7 @@ my %actions = (
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) // {} : {};
 
-		my $distname = decode_utf8(shift @arguments || die "No distribution name given\n");
+		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
 		die "Directory $distname already exists\n" if -e $distname;
 
 		my %args = (
