@@ -47,9 +47,9 @@ sub prompt_yn {
 	my ($description, $default) = @_;
 	my $result;
 	do {
-		$result = prompt("$description [y/n]", $default);
+		$result = prompt("$description [y/n]", $default ? 'y' : 'n');
 	} while (length $result and $result !~ /^(y|n|-)/i);
-	return lc substr $result, 0 , 1;
+	return lc(substr $result, 0 , 1) eq 'y';
 }
 
 sub create_license_for {
@@ -174,8 +174,7 @@ my %actions = (
 		my @arguments = @_;
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
-		my $auto_git = ($config->{auto_git} // 'n') eq 'y';
-		my %opts = $auto_git ? (tag => 1, push => '') : ();
+		my %opts = $config->{auto_git} ? (tag => 1, push => '') : ();
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial config=s silent tag! push:s nopush|no-push/) or return 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
@@ -185,7 +184,7 @@ my %actions = (
 		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1, verbose => !$opts{silent}) or return 1;
 
 		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
-		if ($sure eq 'y') {
+		if ($sure) {
 			my $trial =  $dist->release_status eq 'testing' && $dist->version !~ /_/;
 			my $name = $dist->meta->name . '-' . $dist->meta->version . ($trial ? '-TRIAL' : '' );
 			my $file = $dist->write_tarball($name);
@@ -260,7 +259,7 @@ my %actions = (
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
 		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run|dry-run commit!/) or return 2;
-		$opts{commit} //= $opts{bump} if ($config->{auto_git} // '') eq 'y';
+		$opts{commit} //= $opts{bump} if $config->{auto_git};
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 		if ($opts{bump}) {
@@ -313,9 +312,9 @@ my %actions = (
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
 
 		my $save = sub {
-			my ($config, $key, $value) = @_;
-			if (length $value and $value ne '-') {
-				$config->{$key} = $value;
+			my ($config, $type, $key, $value) = @_;
+			if ($value ne '-') {
+				$config->{$key} = $type eq 'open' ? $value : $value ? $JSON::PP::true : $JSON::PP::false;
 			}
 			else {
 				delete $config->{$key};
@@ -326,7 +325,7 @@ my %actions = (
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
 				next if defined $config->{$key};
-				$save->($config, $key, $prompt_for{$type}->($description, $default));
+				$save->($config, $type, $key, $prompt_for{$type}->($description, $default));
 			}
 			write_json($config_file, $config);
 		}
@@ -335,7 +334,7 @@ my %actions = (
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
 				my $new_value = $prompt_for{$type}->($description, $config->{$key} // $default);
-				$save->($config, $key, $new_value);
+				$save->($config, $type, $key, $new_value);
 			}
 			write_json($config_file, $config);
 		}
@@ -343,7 +342,8 @@ my %actions = (
 			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
-				printf "%s: %s\n", ucfirst $key, $config->{$key} // '(undefined)';
+				my $value = defined $config->{$key} ? $type eq 'open' ? $config->{$key} : $config->{$key} ? 'true' : 'false' : '(undefined)';
+				say "\u$key: $value";
 			}
 		}
 		elsif ($mode eq 'reset') {
