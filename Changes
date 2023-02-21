@@ -2,6 +2,7 @@ Revision history for App-ModuleBuildTiny
 
           - Rename configure to setup
           - Enable git integration by default
+          - Add flag and setting to automatically scan for dependencies
 
 0.035     2023-02-15 21:38:16+0100
           - Add an auto_git configuration option

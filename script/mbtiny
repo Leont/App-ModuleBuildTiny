@@ -27,7 +27,7 @@ C<mbtiny> is a tool to help assemble your CPAN distributions. It's a minimalist 
 
 =head1 SUBCOMMANDS
 
-=head2 regenerate [--bump] [--version=<version] [--verbose] [--dry-run] <files>...
+=head2 regenerate [--bump] [--version=<version] [--verbose] [--dry-run] [--scan] <files>...
 
 This regenerates the given files. If no files are given, it defaults to all six files it can regenerate. You usually want to do this when bumping the version of a module. It has the following options:
 
@@ -40,6 +40,10 @@ Bump the version of the distribution before regenerating.
 =item * version = <new-version>
 
 Set the version of the distribution before regenerating.
+
+=item * scan
+
+Scan for dependencies to include in the metafiles. The default for this can be set in the configuration.
 
 =item * trial
 

@@ -127,10 +127,11 @@ my %prompt_for = (
 );
 
 my @config_items = (
-	[ 'author'  , 'What is the author\'s name?', 'open' ],
-	[ 'email'   , 'What is the author\'s email?', 'open',  ],
-	[ 'license' , 'What license do you want to use?', 'open', 'Perl_5' ],
-	[ 'auto_git', 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
+	[ 'author'   , 'What is the author\'s name?', 'open' ],
+	[ 'email'    , 'What is the author\'s email?', 'open',  ],
+	[ 'license'  , 'What license do you want to use?', 'open', 'Perl_5' ],
+	[ 'auto_git' , 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
+	[ 'auto_scan', 'Do you want mbtiny to automatically scan dependencies for you?', 'yn', !!1 ],
 );
 
 my %actions = (
@@ -258,9 +259,16 @@ my %actions = (
 		my @arguments = @_;
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
-		GetOptionsFromArray(\@arguments, \my %opts, qw/trial bump version=s verbose dry_run|dry-run commit!/) or return 2;
+		my %opts = (scan => $config->{auto_scan});
+		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump version=s verbose dry_run|dry-run commit! scan!/) or return 2;
 		$opts{commit} //= $opts{bump} if $config->{auto_git};
 		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
+
+		if ($opts{scan}) {
+			my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
+			my $prereqs = $dist->scan_prereqs(%opts, sanitize => 1);
+			write_json('prereqs.json', $prereqs->as_string_hash) if !$opts{dry_run};
+		}
 
 		if ($opts{bump}) {
 			bump_versions(%opts);
