@@ -130,7 +130,7 @@ my @config_items = (
 	[ 'author'  , 'What is the author\'s name?', 'open' ],
 	[ 'email'   , 'What is the author\'s email?', 'open',  ],
 	[ 'license' , 'What license do you want to use?', 'open', 'Perl_5' ],
-	[ 'auto_git', 'Do you want mbtiny to automatically handle git for you?', 'yn' ],
+	[ 'auto_git', 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
 );
 
 my %actions = (
