@@ -306,7 +306,7 @@ my %actions = (
 		write_json('prereqs.json', $prereqs->as_string_hash);
 		return 0;
 	},
-	configure => sub {
+	setup => sub {
 		my @arguments = @_;
 		my $config_file = get_config_file();
 

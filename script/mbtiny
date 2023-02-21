@@ -179,7 +179,7 @@ The initial version of the new distribution. This defaults to C<0.001>.
 
 =back
 
-=head2 configure <type>
+=head2 setup <type>
 
 This creates or update your configuration file (at F<~/.mbtiny/config>). It takes one optional position argument that can take any of the following values:
 
