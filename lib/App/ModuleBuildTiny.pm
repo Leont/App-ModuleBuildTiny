@@ -121,6 +121,52 @@ sub bump_versions {
 	$app->rewrite_versions($new_version, is_trial => $trial);
 }
 
+sub regenerate {
+	my ($files, $config, %opts) = @_;
+	my %files = map { $_ => 1 } @{$files};
+	my @dirty = @{$files};
+
+	if ($opts{scan}) {
+		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
+		my $prereqs = $dist->scan_prereqs(%opts, sanitize => 1);
+		write_json('prereqs.json', $prereqs->as_string_hash) if !$opts{dry_run};
+		push @dirty, 'prereqs.json';
+	}
+
+	if ($opts{bump}) {
+		bump_versions(%opts);
+		$files{'Changes'}++;
+		push @dirty, 'Changes';
+	}
+
+	my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
+	my @generated = grep { $files{$_} } $dist->files;
+	for my $filename (@generated) {
+		say "Updating $filename" if $opts{verbose};
+		write_binary($filename, $dist->get_file($filename)) if !$opts{dry_run};
+	}
+
+	if ($opts{commit}) {
+		require Git::Wrapper;
+		my $git = Git::Wrapper->new('.');
+		if ($opts{bump}) {
+			push @dirty, 'lib';
+			push @dirty, 'script' if -d 'script';
+		}
+		my $allowed = join '|', map qr{^\Q$_\E$}, @dirty;
+		my @modified = grep /$allowed/, $git->ls_files({ modified => 1 });
+
+		if (@modified) {
+			my @changes = $dist->get_changes;
+			my $version = 'v' . $dist->version;
+			my $message = join '', $version, "\n\n", @changes;
+			$git->commit({ m => $message }, @dirty);
+		} else {
+			say "No modifications to commit";
+		}
+	}
+}
+
 my %prompt_for = (
 	open => \&prompt,
 	yn => \&prompt_yn,
@@ -133,6 +179,8 @@ my @config_items = (
 	[ 'auto_git' , 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
 	[ 'auto_scan', 'Do you want mbtiny to automatically scan dependencies for you?', 'yn', !!1 ],
 );
+
+my @regenerate_files = qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 my %actions = (
 	dist => sub {
@@ -257,51 +305,16 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
+
 		my $config_file = get_config_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
 		my %opts = (scan => $config->{auto_scan});
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump version=s verbose dry_run|dry-run commit! scan!/) or return 2;
 		$opts{commit} //= $opts{bump} if $config->{auto_git};
-		my %files = map { $_ => 1 } @arguments ? @arguments : qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
+		my @files = @arguments ? @arguments : @regenerate_files;
 
-		if ($opts{scan}) {
-			my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
-			my $prereqs = $dist->scan_prereqs(%opts, sanitize => 1);
-			write_json('prereqs.json', $prereqs->as_string_hash) if !$opts{dry_run};
-		}
+		regenerate(\@files, $config, %opts);
 
-		if ($opts{bump}) {
-			bump_versions(%opts);
-			$files{Changes}++;
-		}
-
-		my $dist = App::ModuleBuildTiny::Dist->new(%opts, regenerate => \%files);
-		my @generated = grep { $files{$_} } $dist->files;
-		for my $filename (@generated) {
-			say "Updating $filename" if $opts{verbose};
-			write_binary($filename, $dist->get_file($filename)) if !$opts{dry_run};
-		}
-
-		if ($opts{commit}) {
-			require Git::Wrapper;
-			my $git = Git::Wrapper->new('.');
-			my @files = keys %files;
-			if ($opts{bump}) {
-				push @files, 'lib';
-				push @files, 'script' if -d 'script';
-			}
-			my $allowed = join '|', map qr{^\Q$_\E$}, @files;
-			my @modified = grep /$allowed/, $git->ls_files({ modified => 1 });
-
-			if (@modified) {
-				my @changes = $dist->get_changes;
-				my $version = 'v' . $dist->version;
-				my $message = join '', $version, "\n\n", @changes;
-				$git->commit({ m => $message }, @files);
-			} else {
-				say "No modifications to commit";
-			}
-		}
 		return 0;
 	},
 	scan => sub {
@@ -389,9 +402,10 @@ my %actions = (
 		$args{module_name} = $distname =~ s/-/::/gr;
 
 		write_module(%args, notice => $license->notice);
-		write_text('LICENSE', $license->fulltext);
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
+
+		regenerate(\@regenerate_files, $config, scan => 1);
 
 		return 0;
 	},
