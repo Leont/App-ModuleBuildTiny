@@ -126,17 +126,27 @@ sub get_changes {
 	return @content;
 }
 
-sub check_changes {
-	my $self = shift;
-	die "Changes appears to be empty\n" if not $self->get_changes;
-}
+sub preflight_check {
+	my ($self, %opts) = @_;
 
-sub check_meta {
-	my $self = shift;
-	my $module_name = $self->{meta}->name =~ s/-/::/gr;
+	die "Changes appears to be empty\n" if not $self->get_changes;
+
 	my $meta_version = $self->{meta}->version;
+	die "Version is still zero\n" if $meta_version eq '0.000';
+
+	die "Abstract is not set\n" if $self->{meta}->abstract eq 'INSERT YOUR ABSTRACT HERE';
+
+	if ($opts{tag}) {
+		require Git::Wrapper;
+		my $git = Git::Wrapper->new('.');
+
+		die "Dirty state in repository\n" if $git->status->is_dirty;
+		die "Tag v$meta_version already exists\n" if eval { $git->rev_parse({ quiet => 1, verify => 1}, "v$meta_version") };
+	}
+
+	my $module_name = $self->{meta}->name =~ s/-/::/gr;
 	my $detected_version = $self->{data}->version($module_name);
-	die sprintf "Version mismatch between module and meta, did you forgot to run regenerate? (%s versus %s)", $detected_version, $meta_version if $detected_version != $meta_version;
+	die sprintf "Version mismatch between module and meta, did you forgot to run regenerate? (%s versus %s)\n", $detected_version, $meta_version if $detected_version != $meta_version;
 }
 
 sub scan_files {

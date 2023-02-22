@@ -202,8 +202,7 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
-		$dist->check_changes;
-		$dist->check_meta;
+		$dist->preflight_check(%opts);
 		my $name = $dist->meta->name . '-' . $dist->meta->version;
 		printf "tar czf $name.tar.gz %s\n", join ' ', $dist->files if $opts{verbose};
 		$dist->write_tarball($name);
@@ -240,8 +239,7 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial config=s silent tag! push:s nopush|no-push/) or return 2;
 
 		my $dist = App::ModuleBuildTiny::Dist->new;
-		$dist->check_changes;
-		$dist->check_meta;
+		$dist->preflight_check(%opts);
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
 		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1, verbose => !$opts{silent}) or return 1;
 
