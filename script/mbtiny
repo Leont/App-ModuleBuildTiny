@@ -181,6 +181,10 @@ The license of the new distribution. It default is set in the configuration file
 
 The initial version of the new distribution. This defaults to C<0.001>.
 
+=item * init-git
+
+Initialize a git repository on minting.
+
 =back
 
 =head2 setup <type>

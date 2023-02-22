@@ -71,6 +71,7 @@ sub write_module {
 	my $content = fill_in($template, \%opts);
 	mkpath(dirname($filename));
 	write_text($filename, $content);
+	return $filename;
 }
 
 sub write_changes {
@@ -395,8 +396,9 @@ my %actions = (
 			version => '0.001',
 			dirname => $distname,
 			abstract => 'INSERT YOUR ABSTRACT HERE',
+			init_git => $config->{auto_git},
 		);
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s/) or return 2;
+		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s init_git|init-git/) or return 2;
 		for my $item (@config_items) {
 			my ($key, $description, $type, $default) = @{$item};
 			next if $type ne 'open'; # may need a field of its own
@@ -410,11 +412,19 @@ my %actions = (
 		chdir $args{dirname};
 		$args{module_name} = $distname =~ s/-/::/gr;
 
-		write_module(%args, notice => $license->notice);
+		my $module_file = write_module(%args, notice => $license->notice);
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
 
 		regenerate(\@regenerate_files, $config, scan => 1);
+
+		if ($args{init_git}) {
+			require Git::Wrapper;
+			my $git = Git::Wrapper->new('.');
+			$git->init;
+			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', $module_file);
+			$git->commit({ message => 'Initial commit' });
+		}
 
 		return 0;
 	},
