@@ -35,7 +35,7 @@ This regenerates the given files. If no files are given, it defaults to all six 
 
 =item * bump
 
-Bump the version of the distribution before regenerating.
+Bump the version of the distribution before regenerating. The default for this can be set in the configuration.
 
 =item * version = <new-version>
 

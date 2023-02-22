@@ -173,6 +173,7 @@ my @config_items = (
 	[ 'email'    , 'What is the author\'s email?', 'open',  ],
 	[ 'license'  , 'What license do you want to use?', 'open', 'Perl_5' ],
 	[ 'auto_git' , 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
+	[ 'auto_bump', 'Do you want mbtiny to automatically bump on regenerate for you?', 'yn', !!1 ],
 	[ 'auto_scan', 'Do you want mbtiny to automatically scan dependencies for you?', 'yn', !!1 ],
 );
 
@@ -317,11 +318,13 @@ my %actions = (
 	},
 	regenerate => sub {
 		my @arguments = @_;
-
 		my $config = get_config;
-		my %opts = (scan => $config->{auto_scan});
-		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump version=s verbose dry_run|dry-run commit! scan!/) or return 2;
-		$opts{commit} //= $opts{bump} if $config->{auto_git};
+		my %opts = (
+			bump   => $config->{auto_bump},
+			commit => $config->{auto_git},
+			scan   => $config->{auto_scan},
+		);
+		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump! version=s verbose dry_run|dry-run commit! scan!/) or return 2;
 		my @files = @arguments ? @arguments : @regenerate_files;
 
 		regenerate(\@files, $config, %opts);
@@ -393,7 +396,7 @@ my %actions = (
 
 		my %args = (
 			%{ $config },
-			version => '0.001',
+			version => '0.000',
 			dirname => $distname,
 			abstract => 'INSERT YOUR ABSTRACT HERE',
 			init_git => $config->{auto_git},
@@ -494,7 +497,6 @@ __DATA__
 @@ Changes
 Revision history for {{ $distname }}
 
-{{ $version }}
           - Initial release to an unsuspecting world
 
 @@ Module.pm
