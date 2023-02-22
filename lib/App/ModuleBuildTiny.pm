@@ -93,11 +93,6 @@ sub write_readme {
 	write_text('README', fill_in($template, \%opts));
 }
 
-sub get_config_file {
-	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
-	return catfile(glob('~'), qw/.mbtiny conf/);
-}
-
 sub read_json {
 	my $filename = shift;
 	-f $filename or return;
@@ -180,6 +175,23 @@ my @config_items = (
 	[ 'auto_scan', 'Do you want mbtiny to automatically scan dependencies for you?', 'yn', !!1 ],
 );
 
+sub get_config_file {
+	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
+	return catfile(glob('~'), qw/.mbtiny conf/);
+}
+
+sub get_config {
+	my $config_file = get_config_file;
+	my $config = -f $config_file ? read_json($config_file) : {};
+	for my $item (@config_items) {
+		my ($key, $description, $type, $default) = @{$item};
+		next unless exists $config->{$key};
+		next unless $type eq 'yn';
+		$config->{$key} = !!$config->{$key};
+	}
+	return $config;
+}
+
 my @regenerate_files = qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 my %actions = (
@@ -221,8 +233,7 @@ my %actions = (
 	},
 	upload => sub {
 		my @arguments = @_;
-		my $config_file = get_config_file();
-		my $config = -f $config_file ? read_json($config_file) : {};
+		my $config = get_config;
 		my %opts = $config->{auto_git} ? (tag => 1, push => '') : ();
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial config=s silent tag! push:s nopush|no-push/) or return 2;
 
@@ -306,8 +317,7 @@ my %actions = (
 	regenerate => sub {
 		my @arguments = @_;
 
-		my $config_file = get_config_file();
-		my $config = -f $config_file ? read_json($config_file) : {};
+		my $config = get_config;
 		my %opts = (scan => $config->{auto_scan});
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump version=s verbose dry_run|dry-run commit! scan!/) or return 2;
 		$opts{commit} //= $opts{bump} if $config->{auto_git};
@@ -375,8 +385,7 @@ my %actions = (
 	mint => sub {
 		my @arguments = @_;
 
-		my $config_file = get_config_file();
-		my $config = -f $config_file ? read_json($config_file) // {} : {};
+		my $config = get_config;
 
 		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
 		die "Directory $distname already exists\n" if -e $distname;
