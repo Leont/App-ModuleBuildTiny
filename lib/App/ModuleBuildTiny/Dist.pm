@@ -381,4 +381,9 @@ for my $method (qw/name version release_status/) {
 	*$method = sub { my $self = shift; return $self->{meta}->$method; }
 }
 
+sub fullname {
+	my $self = shift;
+	my $trial = $self->release_status eq 'testing' && $self->version !~ /_/;
+	return $self->meta->name . '-' . $self->meta->version . ($trial ? '-TRIAL' : '' );
+}
 1;

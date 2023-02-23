@@ -203,17 +203,15 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		$dist->preflight_check(%opts);
-		my $name = $dist->meta->name . '-' . $dist->meta->version;
-		printf "tar czf $name.tar.gz %s\n", join ' ', $dist->files if $opts{verbose};
-		$dist->write_tarball($name);
+		printf "tar czf %s.tar.gz %s\n", $dist->fullname, join ' ', $dist->files if $opts{verbose};
+		$dist->write_tarball($dist->fullname);
 		return 0;
 	},
 	distdir => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, \my %opts, qw/trial verbose!/) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
-		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
-		$dist->write_dir($dist->meta->name . '-' . $dist->meta->version, $opts{verbose});
+		$dist->write_dir($dist->fullname, $opts{verbose});
 		return 0;
 	},
 	test => sub {
@@ -245,9 +243,7 @@ my %actions = (
 
 		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
 		if ($sure) {
-			my $trial =  $dist->release_status eq 'testing' && $dist->version !~ /_/;
-			my $name = $dist->meta->name . '-' . $dist->meta->version . ($trial ? '-TRIAL' : '' );
-			my $file = $dist->write_tarball($name);
+			my $file = $dist->write_tarball($dist->fullname);
 			require CPAN::Upload::Tiny;
 			CPAN::Upload::Tiny->VERSION('0.009');
 			my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($opts{config});
