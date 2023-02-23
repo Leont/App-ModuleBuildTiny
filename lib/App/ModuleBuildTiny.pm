@@ -122,13 +122,6 @@ sub regenerate {
 	my %files = map { $_ => 1 } @{$files};
 	my @dirty = @{$files};
 
-	if ($opts{scan}) {
-		my $dist = App::ModuleBuildTiny::Dist->new(regenerate => { 'META.json' => 1 });
-		my $prereqs = $dist->scan_prereqs(%opts, sanitize => 1);
-		write_json('prereqs.json', $prereqs->as_string_hash) if !$opts{dry_run};
-		push @dirty, 'prereqs.json';
-	}
-
 	if ($opts{bump}) {
 		bump_versions(%opts);
 		$files{'Changes'}++;

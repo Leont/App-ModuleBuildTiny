@@ -162,16 +162,15 @@ sub scan_files {
 	return $combined
 }
 
-sub scan_prereqs {
-	my ($self, %opts) = @_;
+sub _scan_prereqs {
+	my ($omit, %opts) = @_;
 	my (@runtime_files, @test_files);
 	File::Find::find(sub { push @runtime_files, $File::Find::name if -f && /\.pm$/ }, 'lib');
 	File::Find::find(sub { push @runtime_files, $File::Find::name if -f }, 'script');
 	File::Find::find(sub { push @test_files, $File::Find::name if -f && /\.(t|pm)$/ }, 't');
 
-	my @omit = (@{ $opts{omit} // [] }, keys %{ $self->{meta}->provides });
-	my $runtime = scan_files(\@runtime_files, \@omit);
-	my $test = scan_files(\@test_files, \@omit);
+	my $runtime = scan_files(\@runtime_files, $omit);
+	my $test = scan_files(\@test_files, $omit);
 
 	my $prereqs = CPAN::Meta::Prereqs->new({
 		runtime   => { requires => $runtime->as_string_hash },
@@ -182,7 +181,15 @@ sub scan_prereqs {
 	return CPAN::Meta::Prereqs::Filter::filter_prereqs($prereqs, %opts);
 }
 
+
+sub scan_prereqs {
+	my ($self, %opts) = @_;
+	my @omit = (@{ $opts{omit} // [] }, keys %{ $self->{meta}->provides });
+	return _scan_prereqs(\@omit, %opts);
+}
+
 sub load_prereqs {
+	my ($provides, %opts) = @_;
 	my @prereqs;
 	if (-f 'prereqs.json') {
 		push @prereqs, load_jsonyaml('prereqs.json');
@@ -193,6 +200,9 @@ sub load_prereqs {
 	if (-f 'cpanfile') {
 		require Module::CPANfile;
 		push @prereqs, Module::CPANfile->load('cpanfile')->prereq_specs;
+	}
+	if ($opts{scan}) {
+		push @prereqs, _scan_prereqs([ keys %{$provides} ])->as_string_hash;
 	}
 
 	if (@prereqs == 1) {
@@ -226,7 +236,8 @@ sub new {
 		my ($abstract) = ($pod_data->pod('NAME') // '')  =~ / \A \s+ \S+ \s? - \s? (.+?) \s* \z /x or warn "Could not parse abstract from `=head1 NAME` in $filename";
 		my $version = $data->version($data->name) // die "Cannot parse \$VERSION from $filename";
 
-		my $prereqs = load_prereqs();
+		my $provides = Module::Metadata->provides(version => 2, dir => 'lib');
+		my $prereqs = load_prereqs($provides, %opts);
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
 		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} //= $VERSION;
 
@@ -269,7 +280,7 @@ sub new {
 		}
 		$metahash->{prereqs} = $filtered->as_string_hash;
 
-		$metahash->{provides} //= Module::Metadata->provides(version => 2, dir => 'lib') if not $metahash->{no_index};
+		$metahash->{provides} //= $provides if not $metahash->{no_index};
 		CPAN::Meta->create($metahash, { lazy_validation => 0 });
 	};
 
