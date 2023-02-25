@@ -165,9 +165,9 @@ sub scan_files {
 sub _scan_prereqs {
 	my ($omit, %opts) = @_;
 	my (@runtime_files, @test_files);
-	File::Find::find(sub { push @runtime_files, $File::Find::name if -f && /\.pm$/ }, 'lib');
-	File::Find::find(sub { push @runtime_files, $File::Find::name if -f }, 'script');
-	File::Find::find(sub { push @test_files, $File::Find::name if -f && /\.(t|pm)$/ }, 't');
+	File::Find::find(sub { push @runtime_files, $File::Find::name if -f && /\.pm$/ }, 'lib') if -d 'lib';
+	File::Find::find(sub { push @runtime_files, $File::Find::name if -f }, 'script') if -d 'script';
+	File::Find::find(sub { push @test_files, $File::Find::name if -f && /\.(t|pm)$/ }, 't') if -d 't';
 
 	my $runtime = scan_files(\@runtime_files, $omit);
 	my $test = scan_files(\@test_files, $omit);

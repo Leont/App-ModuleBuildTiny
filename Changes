@@ -7,6 +7,7 @@ Revision history for App-ModuleBuildTiny
           - Add git initialization to mint
           - Add setting to automatically bump on regenerate
           - Add more preflight checks
+          - Only scan existent directories
 
 0.035     2023-02-15 21:38:16+0100
           - Add an auto_git configuration option
