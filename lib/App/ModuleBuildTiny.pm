@@ -170,6 +170,25 @@ my @config_items = (
 	[ 'auto_scan', 'Do you want mbtiny to automatically scan dependencies for you?', 'yn', !!1 ],
 );
 
+sub ask {
+	my ($config, $item, $local_default) = @_;
+	my ($key, $description, $type, $global_default) = @{$item};
+	my $value = $prompt_for{$type}->($description, $local_default // $global_default);
+
+	if ($value ne '-') {
+		$config->{$key} = $type eq 'open' ? $value : $value ? $JSON::PP::true : $JSON::PP::false;
+	}
+	else {
+		delete $config->{$key};
+	}
+}
+
+sub list_item {
+	my ($config, $key, $type) = @_;
+	my $value = defined $config->{$key} ? $type eq 'open' ? $config->{$key} : $config->{$key} ? 'true' : 'false' : '(undefined)';
+	say "\u$key: $value";
+}
+
 sub get_config_file {
 	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
 	return catfile(glob('~'), qw/.mbtiny conf/);
@@ -330,42 +349,27 @@ my %actions = (
 	setup => sub {
 		my @arguments = @_;
 		my $config_file = get_config_file();
+		my $config = -f $config_file ? read_json($config_file) : {};
 
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
 
-		my $save = sub {
-			my ($config, $type, $key, $value) = @_;
-			if ($value ne '-') {
-				$config->{$key} = $type eq 'open' ? $value : $value ? $JSON::PP::true : $JSON::PP::false;
-			}
-			else {
-				delete $config->{$key};
-			}
-		};
 		if ($mode eq 'upgrade') {
-			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
-				my ($key, $description, $type, $default) = @{$item};
-				next if defined $config->{$key};
-				$save->($config, $type, $key, $prompt_for{$type}->($description, $default));
+				next if defined $config->{ $item->[0] };
+				ask($config, $item);
 			}
 			write_json($config_file, $config);
 		}
 		elsif ($mode eq 'all') {
-			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
-				my ($key, $description, $type, $default) = @{$item};
-				my $new_value = $prompt_for{$type}->($description, $config->{$key} // $default);
-				$save->($config, $type, $key, $new_value);
+				ask($config, $item, $config->{ $item->[0] });
 			}
 			write_json($config_file, $config);
 		}
 		elsif ($mode eq 'list') {
-			my $config = -f $config_file ? read_json($config_file) : {};
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
-				my $value = defined $config->{$key} ? $type eq 'open' ? $config->{$key} : $config->{$key} ? 'true' : 'false' : '(undefined)';
-				say "\u$key: $value";
+				list_item($config, $key, $type);
 			}
 		}
 		elsif ($mode eq 'reset') {
