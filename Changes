@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Rename configure to setup
+          - Add per-dist configuration
           - Enable git integration by default
           - Add flag and setting to automatically scan for dependencies
           - Immediately regenerate on mint

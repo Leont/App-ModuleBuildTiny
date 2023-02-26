@@ -189,13 +189,26 @@ sub list_item {
 	say "\u$key: $value";
 }
 
-sub get_config_file {
+sub get_settings_file {
 	local $HOME = $USERPROFILE if $^O eq 'MSWin32';
 	return catfile(glob('~'), qw/.mbtiny conf/);
 }
 
+sub get_settings {
+	my $settings_file = get_settings_file;
+	my $settings = -f $settings_file ? read_json($settings_file) : {};
+	for my $item (@config_items) {
+		my ($key, $description, $type, $default) = @{$item};
+		next unless exists $settings->{$key};
+		next unless $type eq 'yn';
+		$settings->{$key} = !!$settings->{$key};
+	}
+	return $settings;
+}
+
+my $config_file = 'dist.json';
+
 sub get_config {
-	my $config_file = get_config_file;
 	my $config = -f $config_file ? read_json($config_file) : {};
 	for my $item (@config_items) {
 		my ($key, $description, $type, $default) = @{$item};
@@ -348,7 +361,7 @@ my %actions = (
 	},
 	setup => sub {
 		my @arguments = @_;
-		my $config_file = get_config_file();
+		my $config_file = get_settings_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
 
 		my $mode = @arguments ? $arguments[0] : 'upgrade';
@@ -377,27 +390,73 @@ my %actions = (
 		}
 		return 0;
 	},
+	config => sub {
+		my @arguments = @_;
+		my $settings = get_settings;
+		my $config = get_config;
+
+		my $mode = @arguments ? $arguments[0] : 'upgrade';
+
+		my @items = grep { $_->[2] ne 'open' } @config_items;
+		if ($mode eq 'upgrade') {
+			for my $item (@items) {
+				next if defined $config->{ $item->[0] };
+				ask($config, $item, $settings->{ $item->[0] });
+			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'all') {
+			for my $item (@items) {
+				my $default = $config->{ $item->[0] } // $settings->{ $item->[0] };
+				ask($config, $item, $default);
+			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'copy') {
+			for my $item (@items) {
+				my ($key) = @{$item};
+				$config->{$key} = $settings->{$key} if exists $settings->{$key};
+			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'list') {
+			for my $item (@items) {
+				my ($key, $description, $type, $default) = @{$item};
+				list_item($config, $key, $type);
+			}
+		}
+		elsif ($mode eq 'reset') {
+			return not unlink $config_file;
+		}
+		return 0;
+	},
 	mint => sub {
 		my @arguments = @_;
 
-		my $config = get_config;
+		my $settings = get_settings;
 
 		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
 		die "Directory $distname already exists\n" if -e $distname;
 
 		my %args = (
-			%{ $config },
-			version => '0.000',
-			dirname => $distname,
+			author   => $settings->{author},
+			email    => $settings->{email},
+			license  => $settings->{license},
+			version  => '0.000',
+			dirname  => $distname,
 			abstract => 'INSERT YOUR ABSTRACT HERE',
-			init_git => $config->{auto_git},
+			init_git => $settings->{auto_git},
 		);
+		my %config;
 		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s init_git|init-git/) or return 2;
 		for my $item (@config_items) {
 			my ($key, $description, $type, $default) = @{$item};
-			next if $type ne 'open'; # may need a field of its own
-			next if defined $args{$key};
-			$args{$key} = prompt($description, $default);
+			if ($type eq 'open') {
+				$args{$key} //= prompt($description, $default);
+			}
+			else {
+				$config{$key} = $settings->{$key} // prompt($description, $default);
+			}
 		}
 
 		my $license = create_license_for(delete $args{license}, $args{author});
@@ -409,14 +468,15 @@ my %actions = (
 		my $module_file = write_module(%args, notice => $license->notice);
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
+		write_json('dist.json', \%config);
 
-		regenerate(\@regenerate_files, $config, scan => 1);
+		regenerate(\@regenerate_files, \%args, scan => 1);
 
 		if ($args{init_git}) {
 			require Git::Wrapper;
 			my $git = Git::Wrapper->new('.');
 			$git->init;
-			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', $module_file);
+			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', 'dist.json', $module_file);
 			$git->commit({ message => 'Initial commit' });
 		}
 
