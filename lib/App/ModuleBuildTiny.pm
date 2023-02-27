@@ -194,9 +194,16 @@ sub get_settings_file {
 	return catfile(glob('~'), qw/.mbtiny conf/);
 }
 
+my %default_settings = (
+	auto_bump => 1,
+	auto_git  => 1,
+	auto_scan => 1,
+);
+
 sub get_settings {
+	my $default = shift // {};
 	my $settings_file = get_settings_file;
-	my $settings = -f $settings_file ? read_json($settings_file) : {};
+	my $settings = -f $settings_file ? read_json($settings_file) : $default;
 	for my $item (@config_items) {
 		my ($key, $description, $type, $default) = @{$item};
 		next unless exists $settings->{$key};
@@ -433,7 +440,7 @@ my %actions = (
 	mint => sub {
 		my @arguments = @_;
 
-		my $settings = get_settings;
+		my $settings = get_settings(\%default_settings);
 
 		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
 		die "Directory $distname already exists\n" if -e $distname;
