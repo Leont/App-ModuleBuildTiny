@@ -148,7 +148,7 @@ sub regenerate {
 		if (@modified) {
 			my @changes = $dist->get_changes;
 			my $version = 'v' . $dist->version;
-			my $message = join '', $version, "\n\n", @changes;
+			my $message = $opts{message} || ($opts{bump} ? join '', $version, "\n\n", @changes : 'Regenerate');
 			$git->commit({ m => $message }, @dirty);
 		} else {
 			say "No modifications to commit";
@@ -343,7 +343,7 @@ my %actions = (
 			commit => $config->{auto_git},
 			scan   => $config->{auto_scan},
 		);
-		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump! version=s verbose dry_run|dry-run commit! scan!/) or return 2;
+		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump! version=s verbose dry_run|dry-run commit! scan! message=s/) or return 2;
 		my @files = @arguments ? @arguments : @regenerate_files;
 
 		regenerate(\@files, $config, %opts);
