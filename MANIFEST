@@ -6,6 +6,7 @@ MANIFEST.SKIP
 META.json
 META.yml
 README
+dist.json
 lib/App/ModuleBuildTiny.pm
 lib/App/ModuleBuildTiny/Dist.pm
 script/mbtiny
