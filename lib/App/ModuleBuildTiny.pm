@@ -443,7 +443,6 @@ my %actions = (
 		my $settings = get_settings(\%default_settings);
 
 		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
-		die "Directory $distname already exists\n" if -e $distname;
 
 		my %args = (
 			author   => $settings->{author},
@@ -468,6 +467,7 @@ my %actions = (
 
 		my $license = create_license_for(delete $args{license}, $args{author});
 
+		die "Directory $args{dirname} already exists\n" if -e $args{dirname};
 		mkdir $args{dirname};
 		chdir $args{dirname};
 		$args{module_name} = $distname =~ s/-/::/gr;
@@ -476,6 +476,8 @@ my %actions = (
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
 		write_json('dist.json', \%config);
+
+		write_json('metamerge.json', { name => $distname }) if $distname ne $args{dirname};
 
 		regenerate(\@regenerate_files, \%args, scan => 1);
 
