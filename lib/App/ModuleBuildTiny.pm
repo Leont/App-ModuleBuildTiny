@@ -479,7 +479,7 @@ my %actions = (
 
 		write_json('metamerge.json', { name => $distname }) if $distname ne $args{dirname};
 
-		regenerate(\@regenerate_files, \%args, scan => 1);
+		regenerate(\@regenerate_files, \%args, scan => $config{auto_scan});
 
 		if ($args{init_git}) {
 			require Git::Wrapper;
