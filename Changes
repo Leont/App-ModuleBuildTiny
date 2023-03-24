@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.037     2023-03-24 12:45:52+0100
           - Write metamerge.json when dirname doesn't match distname
           - Add default settings to mint
 
