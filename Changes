@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add --jobs argument to mbtiny test
           - Also allow module name as mint argument
           - mkdir 't' during mint
 

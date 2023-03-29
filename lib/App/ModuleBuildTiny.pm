@@ -250,7 +250,7 @@ my %actions = (
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
-			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING) or return 2;
+			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING, 'jobs=i' => \my $jobs) or return 2;
 		my @dirs = 't';
 		if ($AUTHOR_TESTING) {
 			push @dirs, catdir('xt', 'author');
@@ -260,6 +260,8 @@ my %actions = (
 		push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
 		@dirs = grep -e, @dirs;
 		my $dist = App::ModuleBuildTiny::Dist->new;
+		my @args;
+		push @args, '-j', $jobs if defined $jobs;
 		return $dist->run(command => [ 'prove', '-br', @dirs ], build => 1, verbose => 1);
 	},
 	upload => sub {
