@@ -442,7 +442,7 @@ my %actions = (
 
 		my $settings = get_settings(\%default_settings);
 
-		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n");
+		my $distname = decode_utf8(shift @arguments // die "No distribution name given\n") =~ s/::/-/gr;
 
 		my %args = (
 			author   => $settings->{author},
