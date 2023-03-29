@@ -476,6 +476,7 @@ my %actions = (
 		write_changes(%args, distname => $distname);
 		write_maniskip($distname);
 		write_json('dist.json', \%config);
+		mkdir 't';
 
 		write_json('metamerge.json', { name => $distname }) if $distname ne $args{dirname};
 

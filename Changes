@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Also allow module name as mint argument
+          - mkdir 't' during mint
 
 0.037     2023-03-24 12:45:52+0100
           - Write metamerge.json when dirname doesn't match distname
