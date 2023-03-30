@@ -262,7 +262,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		my @args;
 		push @args, '-j', $jobs if defined $jobs;
-		return $dist->run(command => [ 'prove', '-br', @dirs ], build => 1, verbose => 1);
+		return $dist->run(command => [ 'prove', '-br', @args, @dirs ], build => 1, verbose => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
