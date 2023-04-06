@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Don't autocommit/autobump on partial regenerate
+
 0.038     2023-03-30 17:07:59+0200
           - Add --jobs argument to mbtiny test
           - Also allow module name as mint argument
