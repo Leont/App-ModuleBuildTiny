@@ -347,14 +347,14 @@ my %actions = (
 	regenerate => sub {
 		my @arguments = @_;
 		my $config = get_config;
-		my $specific = @arguments;
-		my @files = $specific ? @arguments : @regenerate_files;
-		my %opts = (
-			bump   => $config->{auto_bump} && !$specific,
-			commit => $config->{auto_git} && !$specific,
-			scan   => $config->{auto_scan},
-		);
+		my %opts;
 		GetOptionsFromArray(\@arguments, \%opts, qw/trial bump! version=s verbose dry_run|dry-run commit! scan! message=s/) or return 2;
+		my @files = @arguments ? @arguments : @regenerate_files;
+		if (!@arguments) {
+			$opts{bump}   //= $config->{auto_bump};
+			$opts{commit} //= $config->{auto_git};
+			$opts{scan}   //= $config->{auto_scan};
+		}
 
 		regenerate(\@files, $config, %opts);
 
