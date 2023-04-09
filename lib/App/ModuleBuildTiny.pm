@@ -486,10 +486,13 @@ my %actions = (
 		regenerate(\@regenerate_files, \%args, scan => $config{auto_scan});
 
 		if ($args{init_git}) {
+			my $ignore = join "\n", qw/*.bak *.swp *.swo *.tdy *.tar.gz/, "$distname-*", '';
+			write_text('.gitignore', $ignore);
+
 			require Git::Wrapper;
 			my $git = Git::Wrapper->new('.');
 			$git->init;
-			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', 'dist.json', $module_file);
+			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', 'dist.json', '.gitignore', $module_file);
 			$git->commit({ message => 'Initial commit' });
 		}
 
