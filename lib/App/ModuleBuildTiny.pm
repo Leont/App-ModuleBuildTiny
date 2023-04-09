@@ -27,7 +27,7 @@ use App::ModuleBuildTiny::Dist;
 
 use Env qw/$AUTHOR_TESTING $RELEASE_TESTING $AUTOMATED_TESTING $EXTENDED_TESTING $NONINTERACTIVE_TESTING $SHELL $HOME $USERPROFILE/;
 
-Getopt::Long::Configure(qw/require_order gnu_compat/);
+Getopt::Long::Configure(qw/require_order gnu_compat bundling/);
 
 sub prompt {
 	my($mess, $def) = @_;
@@ -250,7 +250,8 @@ my %actions = (
 		my @arguments = @_;
 		$AUTHOR_TESTING = 1;
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
-			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING, 'jobs=i' => \my $jobs) or return 2;
+			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING, 'jobs=i' => \my $jobs, 'inc|I=s@' => \my @inc)
+			or return 2;
 		my @dirs = 't';
 		if ($AUTHOR_TESTING) {
 			push @dirs, catdir('xt', 'author');
@@ -262,6 +263,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		my @args;
 		push @args, '-j', $jobs if defined $jobs;
+		push @args, map {; '-I', rel2abs($_) } @inc;
 		return $dist->run(command => [ 'prove', '-br', @args, @dirs ], build => 1, verbose => 1);
 	},
 	upload => sub {
