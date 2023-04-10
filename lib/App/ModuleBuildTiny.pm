@@ -264,7 +264,7 @@ my %actions = (
 		my @args;
 		push @args, '-j', $jobs if defined $jobs;
 		push @args, map {; '-I', rel2abs($_) } @inc;
-		return $dist->run(command => [ 'prove', '-br', @args, @dirs ], build => 1, verbose => 1);
+		return $dist->run(commands => [ [ 'prove', '-br', @args, @dirs ] ], build => 1, verbose => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
@@ -275,7 +275,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->preflight_check(%opts);
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
-		$dist->run(command => [ catfile(curdir, 'Build'), 'test' ], build => 1, verbose => !$opts{silent}) or return 1;
+		$dist->run(commands => [ [ catfile(curdir, 'Build'), 'test' ] ], build => 1, verbose => !$opts{silent}) or return 1;
 
 		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
 		if ($sure) {
@@ -309,13 +309,13 @@ my %actions = (
 		die "No arguments given to run\n" if not @arguments;
 		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
-		return $dist->run(command => \@arguments, build => $build, verbose => 1);
+		return $dist->run(commands => [ \@arguments ], build => $build, verbose => 1);
 	},
 	shell => sub {
 		my @arguments = @_;
 		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or return 2;
 		my $dist = App::ModuleBuildTiny::Dist->new();
-		return $dist->run(command => [ $SHELL ], build => $build, verbose => 0);
+		return $dist->run(commands => [ [ $SHELL ] ], build => $build, verbose => 0);
 	},
 	listdeps => sub {
 		my @arguments = @_;

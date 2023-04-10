@@ -367,19 +367,25 @@ sub run {
 	my $dir  = File::Temp::tempdir(CLEANUP => 1);
 	$self->write_dir($dir, $opts{verbose});
 	local $CWD = $dir;
+	my $ret = !!1;
 	if ($opts{build}) {
 		system $Config{perlpath}, 'Build.PL';
 		system $Config{perlpath}, 'Build';
 		my @extralib = map { rel2abs(catdir('blib', $_)) } 'arch', 'lib';
 		local @PERL5LIB = (@extralib, @PERL5LIB);
 		local @PATH = (rel2abs(catdir('blib', 'script')), @PATH);
-		say join ' ', @{ $opts{command} } if $opts{verbose};
-		return not system @{ $opts{command} };
+		for my $command (@{ $opts{commands} }) {
+			say join ' ', @{$command} if $opts{verbose};
+			$ret &&= not system @{$command};
+		}
 	}
 	else {
-		say join ' ', @{ $opts{command} } if $opts{verbose};
-		return not system @{ $opts{command} };
+		for my $command (@{ $opts{commands} }) {
+			say join ' ', @{$command} if $opts{verbose};
+			$ret &&= not system @{$command};
+		}
 	}
+	return $ret;
 }
 
 for my $method (qw/meta license/) {
