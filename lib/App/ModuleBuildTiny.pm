@@ -494,7 +494,7 @@ my %actions = (
 			require Git::Wrapper;
 			my $git = Git::Wrapper->new('.');
 			$git->init;
-			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', 'dist.json', '.gitignore', $module_file);
+			$git->add(@regenerate_files, 'Changes', 'MANIFEST.SKIP', 'dist.json', '.gitignore', $module_file, grep -e, 'metamerge.json');
 			$git->commit({ message => 'Initial commit' });
 		}
 
