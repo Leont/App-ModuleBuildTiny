@@ -226,6 +226,17 @@ sub get_config {
 	return $config;
 }
 
+sub extra_tests {
+	my @dirs;
+	if ($AUTHOR_TESTING) {
+		push @dirs, catdir('xt', 'author');
+		push @dirs, glob 'xt/*.t';
+	}
+	push @dirs, catdir('xt', 'release') if $RELEASE_TESTING;
+	push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
+	return grep -e, @dirs;
+}
+
 my @regenerate_files = qw/Build.PL META.json META.yml MANIFEST LICENSE README/;
 
 my %actions = (
@@ -252,19 +263,14 @@ my %actions = (
 		GetOptionsFromArray(\@arguments, 'release!' => \$RELEASE_TESTING, 'author!' => \$AUTHOR_TESTING, 'automated!' => \$AUTOMATED_TESTING,
 			'extended!' => \$EXTENDED_TESTING, 'non-interactive!' => \$NONINTERACTIVE_TESTING, 'jobs=i' => \my $jobs, 'inc|I=s@' => \my @inc)
 			or return 2;
-		my @dirs = 't';
-		if ($AUTHOR_TESTING) {
-			push @dirs, catdir('xt', 'author');
-			push @dirs, glob 'xt/*.t';
-		}
-		push @dirs, catdir('xt', 'release') if $RELEASE_TESTING;
-		push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
-		@dirs = grep -e, @dirs;
+		my @tests;
+		push @tests, 't' if -e 't';
+		push @tests, extra_tests();
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		my @args;
 		push @args, '-j', $jobs if defined $jobs;
 		push @args, map {; '-I', rel2abs($_) } @inc;
-		return $dist->run(commands => [ [ 'prove', '-br', @args, @dirs ] ], build => 1, verbose => 1);
+		return $dist->run(commands => [ [ 'prove', '-br', @args, @tests ] ], build => 1, verbose => 1);
 	},
 	upload => sub {
 		my @arguments = @_;
@@ -275,7 +281,10 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->preflight_check(%opts);
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
-		$dist->run(commands => [ [ catfile(curdir, 'Build'), 'test' ] ], build => 1, verbose => !$opts{silent}) or return 1;
+		my @commands = ([ catfile(curdir, 'Build'), 'test' ]);
+		my @extra_tests = extra_tests;
+		push @commands, [ 'prove', '-br', @extra_tests ] if @extra_tests;
+		$dist->run(commands => \@commands, build => 1, verbose => !$opts{silent}) or return 1;
 
 		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
 		if ($sure) {
