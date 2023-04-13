@@ -285,7 +285,7 @@ my %actions = (
 		push @commands, [ 'prove', '-br', @extra_tests ] if @extra_tests;
 		$dist->run(commands => \@commands, build => 1, verbose => !$opts{silent}) or return 1;
 
-		my $sure = prompt_yn('Do you want to continue the release process?', 'n');
+		my $sure = prompt_yn('Do you want to continue the release process?', !!0);
 		if ($sure) {
 			my $file = $dist->write_tarball($dist->fullname);
 			require CPAN::Upload::Tiny;
