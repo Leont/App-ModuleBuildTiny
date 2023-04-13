@@ -4,7 +4,7 @@ use strict;
 use warnings;
 use App::ModuleBuildTiny;
 
-our $VERSION = '0.039';
+our $VERSION = '0.040';
 
 modulebuildtiny(@ARGV);
 
