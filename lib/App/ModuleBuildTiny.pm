@@ -20,7 +20,6 @@ use File::Spec::Functions qw/catfile catdir curdir rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 use JSON::PP qw/decode_json/;
 use Module::Runtime 'require_module';
-use Pod::Simple::Text 3.23;
 use Text::Template;
 
 use App::ModuleBuildTiny::Dist;

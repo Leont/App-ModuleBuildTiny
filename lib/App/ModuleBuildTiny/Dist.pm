@@ -18,6 +18,7 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use Module::Runtime 'require_module';
 use Module::Metadata 1.000037;
 use Pod::Escapes qw/e2char/;
+use Pod::Simple::Text 3.23;
 use POSIX 'strftime';
 
 
