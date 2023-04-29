@@ -11,7 +11,7 @@ use Config;
 use CPAN::Meta;
 use Data::Section::Simple 'get_data_section';
 use Encode qw/encode_utf8 decode_utf8/;
-use ExtUtils::Manifest qw/manifind maniskip maniread/;
+use ExtUtils::Manifest 1.75 qw/manifind maniskip maniread/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath/;
 use File::Slurper qw/write_text write_binary read_binary/;
@@ -82,8 +82,6 @@ sub write_changes {
 sub write_maniskip {
 	my $distname = shift;
 	write_text('MANIFEST.SKIP', "#!include_default\n$distname-.*\nREADME.pod\n");
-	maniskip(); # This expands the #!include_default as a side-effect
-	unlink 'MANIFEST.SKIP.bak' if -f 'MANIFEST.SKIP.bak';
 }
 
 sub write_readme {
