@@ -15,7 +15,7 @@ use ExtUtils::Manifest qw/manifind maniskip maniread/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath/;
 use File::Slurper qw/write_text write_binary read_binary/;
-use File::Spec::Functions qw/catfile catdir curdir rel2abs/;
+use File::Spec::Functions qw/catfile rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 use JSON::PP qw/decode_json/;
 use Module::Runtime 'require_module';
@@ -227,11 +227,11 @@ sub get_config {
 sub extra_tests {
 	my @dirs;
 	if ($AUTHOR_TESTING) {
-		push @dirs, catdir('xt', 'author');
+		push @dirs, 'xt/author';
 		push @dirs, glob 'xt/*.t';
 	}
-	push @dirs, catdir('xt', 'release') if $RELEASE_TESTING;
-	push @dirs, catdir('xt', 'extended') if $EXTENDED_TESTING;
+	push @dirs, 'xt/release' if $RELEASE_TESTING;
+	push @dirs, 'xt/extended' if $EXTENDED_TESTING;
 	return grep -e, @dirs;
 }
 
@@ -279,7 +279,7 @@ my %actions = (
 		my $dist = App::ModuleBuildTiny::Dist->new;
 		$dist->preflight_check(%opts);
 		local ($AUTHOR_TESTING, $RELEASE_TESTING) = (1, 1);
-		my @commands = ([ catfile(curdir, 'Build'), 'test' ]);
+		my @commands = ([ './Build', 'test' ]);
 		my @extra_tests = extra_tests;
 		push @commands, [ 'prove', '-br', @extra_tests ] if @extra_tests;
 		$dist->run(commands => \@commands, build => 1, verbose => !$opts{silent}) or return 1;
