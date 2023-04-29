@@ -6,7 +6,65 @@ use App::ModuleBuildTiny;
 
 our $VERSION = '0.040';
 
+print_help() if ($ARGV[0] // 'help') eq 'help';
+
 modulebuildtiny(@ARGV);
+
+sub print_help {
+	print "Usage: $0 <command> [arguments ...]\n\nAvailable commands:\n\n";
+	App::ModuleBuildTiny::Help->filter(__FILE__);
+	print "\n";
+	exit !@ARGV;
+}
+
+package App::ModuleBuildTiny::Help;
+
+use parent qw(Pod::Simple::Methody);
+
+sub start_head1 {
+	my ($self, $attrs) = @_;
+	$self->{_mbth_head1_content} = '';
+}
+
+sub end_head1   {
+	my ($self) = @_;
+
+	$self->{_mbth_in_subcommands} = delete($self->{_mbth_head1_content}) eq 'SUBCOMMANDS';
+}
+
+sub start_head2 {
+	my ($self, $attrs) = @_;
+
+	return unless $self->{_mbth_in_subcommands};
+	$self->{_mbth_subcommand_name} = '';
+}
+
+sub end_head2 {
+	my ($self) = @_;
+
+	if (my $cmd = delete $self->{_mbth_subcommand_name}) {
+		$self->output_fh->printf("    %-10s - ", $1) if $cmd =~ /(^\w+)/;
+		$self->{_mbth_print_desc} = 1;
+	}
+}
+
+sub handle_text {
+	my ($self, $text) = @_;
+
+	if (defined $self->{_mbth_head1_content}) {
+		$self->{_mbth_head1_content} .= $text;
+		return;
+	}
+
+	if (defined $self->{_mbth_subcommand_name}) {
+		$self->{_mbth_subcommand_name} .= $text;
+		return;
+	}
+
+	if (delete $self->{_mbth_print_desc}) {
+		$self->output_fh->say($1) if $text =~ /^([^.(]+)/;
+	}
+}
 
 __END__
 
