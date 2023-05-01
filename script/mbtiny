@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 use App::ModuleBuildTiny;
+use File::Basename 'basename';
 
 our $VERSION = '0.041';
 
@@ -11,7 +12,8 @@ print_help() if ($ARGV[0] // 'help') eq 'help';
 modulebuildtiny(@ARGV);
 
 sub print_help {
-	print "Usage: $0 <command> [arguments ...]\n\nAvailable commands:\n\n";
+	my $program = basename($0);
+	print "Usage: $program <command> [arguments ...]\n\nAvailable commands:\n\n";
 	App::ModuleBuildTiny::Help->filter(__FILE__);
 	print "\n";
 	exit !@ARGV;
