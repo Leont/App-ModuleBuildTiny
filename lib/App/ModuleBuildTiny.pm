@@ -505,6 +505,9 @@ my %actions = (
 
 		return 0;
 	},
+	version => sub {
+		say $VERSION;
+	},
 );
 
 sub modulebuildtiny {

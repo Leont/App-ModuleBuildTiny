@@ -331,6 +331,10 @@ Create a distribution tarball.
 
 Create a directory containing all of the files of the distribution.
 
+=head2 version
+
+This prints the version of C<mbtiny>.
+
 =head1 INPUTS
 
 The metadata for the distribution is gathered from various sources.
