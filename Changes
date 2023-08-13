@@ -1,6 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
           - Add version subcommand
+          - Allow -j as synonym for --jobs
 
 0.041     2023-04-29 16:31:04+0200
           - Depend on new ExtUtils::Manifest #include behavior
