@@ -5,7 +5,7 @@ use warnings;
 use App::ModuleBuildTiny;
 use File::Basename 'basename';
 
-our $VERSION = '0.041';
+our $VERSION = '0.042';
 
 print_help() if ($ARGV[0] // 'help') eq 'help';
 
