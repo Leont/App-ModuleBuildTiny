@@ -8,18 +8,23 @@ use Exporter 5.57 'import';
 our @EXPORT = qw/modulebuildtiny/;
 
 use Config;
-use CPAN::Meta;
-use Data::Section::Simple 'get_data_section';
+use CPAN::Meta; # XXX Not core
+# CPAN::Meta::Prereqs::Filter XXX not core
+use Data::Section::Simple 'get_data_section'; # XXX not core
 use Encode qw/encode_utf8 decode_utf8/;
 use ExtUtils::Manifest 1.75 qw/manifind maniskip maniread/;
 use File::Basename qw/dirname/;
 use File::Path qw/mkpath/;
-use File::Slurper qw/write_text write_binary read_binary/;
 use File::Spec::Functions qw/catfile rel2abs/;
 use Getopt::Long 2.36 'GetOptionsFromArray';
 use JSON::PP qw/decode_json/;
-use Module::Runtime 'require_module';
-use Text::Template;
+use App::ModuleBuildTiny::Utils qw(
+  require_module
+  write_text
+  write_binary
+  read_binary
+);
+use Text::Template; # XXX not core
 
 use App::ModuleBuildTiny::Dist;
 

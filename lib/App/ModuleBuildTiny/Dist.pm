@@ -4,17 +4,21 @@ use 5.014;
 use warnings;
 our $VERSION = '0.042';
 
-use CPAN::Meta;
+use CPAN::Meta; # XXX Not core
 use Config;
 use Encode qw/encode_utf8 decode_utf8/;
 use File::Basename qw/basename dirname/;
 use File::Copy qw/copy/;
 use File::Path qw/mkpath rmtree/;
 use File::Spec::Functions qw/catfile catdir rel2abs/;
-use File::Slurper qw/write_text read_text read_binary/;
-use File::chdir;
+use File::chdir; # XXX Not core
 use ExtUtils::Manifest qw/manifind maniskip maniread/;
-use Module::Runtime 'require_module';
+use App::ModuleBuildTiny::Utils qw(
+  require_module
+  write_text
+  write_binary
+  read_binary
+);
 use Module::Metadata 1.000037;
 use Pod::Escapes qw/e2char/;
 use Pod::Simple::Text 3.23;
