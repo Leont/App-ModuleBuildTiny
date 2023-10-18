@@ -482,14 +482,16 @@ my %actions = (
 			init_git => $settings->{auto_git},
 		);
 		my %config;
-		GetOptionsFromArray(\@arguments, \%args, qw/author=s email=s license=s version=s abstract=s dirname=s init_git|init-git/) or return 2;
+		my @options = qw/version=s abstract=s dirname=s init_git|init-git/;
+		push @options, map { "$_->[0]|" . ($_->[0] =~ s/_/-/gr) . ($_->[2] eq 'yn' ? '!' : '=s') } @config_items;
+		GetOptionsFromArray(\@arguments, \%args, @options) or return 2;
 		for my $item (@config_items) {
 			my ($key, $description, $type, $default) = @{$item};
 			if ($type eq 'open') {
 				$args{$key} //= prompt($description, $default);
 			}
 			else {
-				$config{$key} = $settings->{$key} // prompt($description, $default);
+				$config{$key} = $args{$key} // $settings->{$key} // prompt_yn($description, $default);
 			}
 		}
 
