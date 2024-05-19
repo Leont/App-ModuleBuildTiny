@@ -1,8 +1,2 @@
 resources:
-    repository:
-        type: git
-        url: https://github.com/Leont/App-ModuleBuildTiny.git
-        web: https://github.com/Leont/App-ModuleBuildTiny/
-    bugtracker:
-        web: https://github.com/Leont/App-ModuleBuildTiny/issues
     x_IRC: irc://irc.perl.org/#toolchain

@@ -240,6 +240,7 @@ sub new {
 		my $prereqs = load_prereqs($provides, %opts);
 		$prereqs->{configure}{requires}{'Module::Build::Tiny'} //= mbt_version();
 		$prereqs->{develop}{requires}{'App::ModuleBuildTiny'} //= $VERSION;
+		my %resources = $class->generate_resources(%opts);
 
 		my $metahash = {
 			name           => $distname,
@@ -255,6 +256,7 @@ sub new {
 				version    => '2',
 				url        => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec'
 			},
+			(resources      => \%resources) x!! %resources,
 			x_spdx_expression => $license->spdx_expression,
 		};
 		if (%{$mergedata}) {
@@ -319,6 +321,52 @@ sub new {
 		license => $license,
 		data => $data,
 	}, $class
+}
+
+
+sub generate_resources {
+	my ($class, %opts) = @_;
+	my %result;
+
+	if ($opts{add_repository}) {
+		require Git::Wrapper;
+		my $git = Git::Wrapper->new('.');
+		my ($origin) = $git->remote('get-url' => 'origin');
+		if ($origin =~ m{https://github.com/([\w.-]+)/([\w.-]+).git}) {
+			$result{repository} = {
+				type => 'git',
+				web  => "https://github.com/$1/$2/",
+				url  => $origin,
+			};
+		} elsif ($origin =~ m{git\@github.com:([\w.-]+)/([\w.-]+).git}) {
+			$result{repository} = {
+				type => 'git',
+				web  => "https://github.com/$1/$2/",
+				url  => "https://github.com/$1/$2.git",
+			};
+		} elsif ($origin =~ m{^https?://}) {
+			$result{repository} = {
+				type => 'git',
+				url  => $origin,
+			};
+		}
+	}
+
+	if ($opts{add_bugtracker}) {
+		require Git::Wrapper;
+		my $git = Git::Wrapper->new('.');
+		my ($origin) = $git->remote('get-url' => 'origin');
+		if ($origin =~ m{https://github.com/([\w.-]+)/([\w.-]+).git}) {
+			$result{bugtracker} = {
+				web  => "https://github.com/$1/$2/issues",
+			};
+		} elsif ($origin =~ m{git\@github.com:([\w.-]+)/([\w.-]+).git}) {
+			$result{bugtracker} = {
+				web  => "https://github.com/$1/$2/issues",
+			};
+		}
+	}
+	return %result;
 }
 
 sub write_dir {
