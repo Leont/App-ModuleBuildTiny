@@ -392,9 +392,8 @@ sub write_tarball {
 	for my $filename ($self->files) {
 		$arch->add_data($filename, $self->get_file($filename), { mode => oct '0644'} );
 	}
-	my $file = $name . ".tar.gz";
-	$arch->write($file, &Archive::Tar::COMPRESS_GZIP, $name);
-	return $file;
+	$arch->write($name, &Archive::Tar::COMPRESS_GZIP, $name);
+	return $name;
 }
 
 sub files {
@@ -451,4 +450,10 @@ sub fullname {
 	my $trial = $self->release_status eq 'testing' && $self->version !~ /_/;
 	return $self->meta->name . '-' . $self->meta->version . ($trial ? '-TRIAL' : '' );
 }
+
+sub archivename {
+	my $self = shift;
+	return $self->fullname . '.tar.gz';
+}
+
 1;

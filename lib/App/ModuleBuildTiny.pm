@@ -270,8 +270,9 @@ my %actions = (
 		insert_options(\%opts, get_config);
 		die "Trial mismatch" if $opts{trial} && $dist->release_status ne 'testing';
 		$dist->preflight_check(%opts);
-		printf "tar czf %s.tar.gz %s\n", $dist->fullname, join ' ', $dist->files if $opts{verbose};
-		$dist->write_tarball($dist->fullname);
+		my $filename = $dist->archivename;
+		printf "tar czf %s %s\n", $filename, join ' ', $dist->files if $opts{verbose};
+		$dist->write_tarball($filename);
 		return 0;
 	},
 	distdir => sub {
