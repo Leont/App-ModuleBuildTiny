@@ -1,5 +1,5 @@
 ---
-abstract: 'A standalone authoring tool for Module::Build::Tiny'
+abstract: 'A standalone authoring tool for Module::Build::Tiny and Dist::Build'
 author:
   - 'Leon Timmermans <leont@cpan.org>'
 build_requires:
@@ -52,6 +52,7 @@ requires:
   POSIX: '0'
   Parse::CPAN::Meta: '0'
   Perl::PrereqScanner: '0'
+  Perl::PrereqScanner::Scanner::DistBuild: '0'
   Pod::Escapes: '0'
   Pod::Simple::Methody: '0'
   Pod::Simple::Text: '3.23'

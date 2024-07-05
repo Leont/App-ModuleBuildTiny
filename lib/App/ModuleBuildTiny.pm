@@ -560,7 +560,7 @@ sub modulebuildtiny {
 
 =head1 NAME
 
-App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny
+App::ModuleBuildTiny - A standalone authoring tool for Module::Build::Tiny and Dist::Build
 
 =head1 DESCRIPTION
 

@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Add a Dist::Build mode
+
 0.044     2024-05-19 15:58:03+0200
           - Add support for automatic resources
 
