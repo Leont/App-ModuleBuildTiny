@@ -315,7 +315,7 @@ my %actions = (
 
 		my $sure = prompt_yn('Do you want to continue the release process?', !!0);
 		if ($sure) {
-			my $file = $dist->write_tarball($dist->fullname);
+			my $file = $dist->write_tarball($dist->archivename);
 			require CPAN::Upload::Tiny;
 			CPAN::Upload::Tiny->VERSION('0.009');
 			my $uploader = CPAN::Upload::Tiny->new_from_config_or_stdin($opts{config});

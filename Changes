@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Fix archive name when uploading
+
 0.045     2024-07-12 14:06:17+0200
           - Add a Dist::Build mode
 
