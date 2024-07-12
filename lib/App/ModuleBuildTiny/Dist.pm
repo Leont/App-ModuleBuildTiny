@@ -415,7 +415,7 @@ sub write_tarball {
 	for my $filename ($self->files) {
 		$arch->add_data($filename, $self->get_file($filename), { mode => oct '0644'} );
 	}
-	$arch->write($name, &Archive::Tar::COMPRESS_GZIP, $name);
+	$arch->write($name, &Archive::Tar::COMPRESS_GZIP, $name =~ s/.tar.gz$//r);
 	return $name;
 }
 

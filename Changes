@@ -1,5 +1,7 @@
 Revision history for App-ModuleBuildTiny
 
+          - Fix extractability issues with tarball
+
 0.046     2024-07-12 14:20:59+0200
           - Fix archive name when uploading
 
