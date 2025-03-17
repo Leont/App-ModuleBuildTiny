@@ -193,10 +193,9 @@ sub ask {
 	}
 }
 
-sub list_item {
+sub show_item {
 	my ($config, $key, $type) = @_;
-	my $value = defined $config->{$key} ? $type eq 'open' ? $config->{$key} : $config->{$key} ? 'true' : 'false' : '(undefined)';
-	say "\u$key: $value";
+	return defined $config->{$key} ? $type eq 'open' ? $config->{$key} : $config->{$key} ? 'true' : 'false' : '(undefined)';
 }
 
 sub get_settings_file {
@@ -447,6 +446,13 @@ my %actions = (
 			}
 			write_json($config_file, $config);
 		}
+		elsif ($mode eq 'get') {
+			my ($key, $value) = @arguments;
+			my ($item) = grep { $_->[0] eq $key } @config_items;
+			die "No such known key $key" if not $item;
+			my (undef, $description, $type, $default) = @{$item};
+			say show_item($config, $key, $type);
+		}
 		elsif ($mode eq 'set') {
 			my ($key, $value) = @arguments;
 			my $item = grep { $_->[0] eq $key } @config_items;
@@ -461,7 +467,7 @@ my %actions = (
 		elsif ($mode eq 'list') {
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
-				list_item($config, $key, $type);
+				say "\u$key: " . show_item($config, $key, $type);
 			}
 		}
 		elsif ($mode eq 'reset') {
@@ -498,6 +504,13 @@ my %actions = (
 			}
 			write_json($config_file, $config);
 		}
+		elsif ($mode eq 'get') {
+			my ($key, $value) = @arguments;
+			my ($item) = grep { $_->[0] eq $key } @config_items;
+			die "No such known key $key" if not $item;
+			my (undef, $description, $type, $default) = @{$item};
+			say show_item($config, $key, $type);
+		}
 		elsif ($mode eq 'set') {
 			my ($key, $value) = @arguments;
 			my $item = grep { $_->[0] eq $key } @config_items;
@@ -508,7 +521,7 @@ my %actions = (
 		elsif ($mode eq 'list') {
 			for my $item (@items) {
 				my ($key, $description, $type, $default) = @{$item};
-				list_item($config, $key, $type);
+				say "\u$key: " . show_item($config, $key, $type);
 			}
 		}
 		elsif ($mode eq 'reset') {
