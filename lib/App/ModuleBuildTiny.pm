@@ -262,6 +262,11 @@ sub regenerate_files {
 	return @result;
 }
 
+my %boolean = (
+	true  => !!1,
+	false => !!0,
+);
+
 my %actions = (
 	dist => sub {
 		my @arguments = @_;
@@ -416,7 +421,7 @@ my %actions = (
 		my $config_file = get_settings_file();
 		my $config = -f $config_file ? read_json($config_file) : {};
 
-		my $mode = @arguments ? $arguments[0] : 'upgrade';
+		my $mode = @arguments ? shift @arguments : 'upgrade';
 
 		if ($mode eq 'upgrade') {
 			for my $item (@config_items) {
@@ -442,6 +447,17 @@ my %actions = (
 			}
 			write_json($config_file, $config);
 		}
+		elsif ($mode eq 'set') {
+			my ($key, $value) = @arguments;
+			my $item = grep { $_->[0] eq $key } @config_items;
+			die "No such known key $key" if not $item;
+			if ($item->[2] eq 'yn') {
+				$config->{$key} = $boolean{$value} // die "Unknown boolean value '$value'\n";
+			} else {
+				$config->{$key} = $value;
+			}
+			write_json($config_file, $config);
+		}
 		elsif ($mode eq 'list') {
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
@@ -458,7 +474,7 @@ my %actions = (
 		my $settings = get_settings;
 		my $config = get_config;
 
-		my $mode = @arguments ? $arguments[0] : 'upgrade';
+		my $mode = @arguments ? shift @arguments : 'upgrade';
 
 		my @items = grep { $_->[2] ne 'open' } @config_items;
 		if ($mode eq 'upgrade') {
@@ -480,6 +496,13 @@ my %actions = (
 				my ($key) = @{$item};
 				$config->{$key} = $settings->{$key} if exists $settings->{$key};
 			}
+			write_json($config_file, $config);
+		}
+		elsif ($mode eq 'set') {
+			my ($key, $value) = @arguments;
+			my $item = grep { $_->[0] eq $key } @config_items;
+			die "No such known key $key" if not $item;
+			$config->{$key} = $boolean{$value} // die "Unknown boolean value '$value'\n";
 			write_json($config_file, $config);
 		}
 		elsif ($mode eq 'list') {

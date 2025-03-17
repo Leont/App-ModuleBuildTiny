@@ -267,6 +267,10 @@ Like update, but only asks questions that do not have a default (The author's na
 
 Ask about all configuration items, even if they currently have a value.
 
+=item * set <config_key> <config_value>
+
+This sets the given key to the specified value.
+
 =item * list
 
 List your current configuration.
@@ -290,6 +294,10 @@ Ask about all configuration items that are currently empty. This is the default.
 =item * all
 
 Ask about all configuration items, even if they currently have a value.
+
+=item * set <config_key> <config_value>
+
+This sets the given key to the specified value.
 
 =item * copy
 

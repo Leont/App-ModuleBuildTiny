@@ -2,6 +2,7 @@ Revision history for App-ModuleBuildTiny
 
           - Add support for dynamic prerequisites
           - Add setup minimal mode
+          - Add set mode to setup and config
 
 0.047     2024-07-12 14:27:00+0200
           - Fix extractability issues with tarball
