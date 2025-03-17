@@ -259,6 +259,10 @@ Create or update your configuration file (at F<~/.mbtiny/config>). Takes one opt
 
 Ask about all configuration items that are currently empty. This is the default.
 
+=item * minimal
+
+Like update, but only asks questions that do not have a default (The author's name and email address).
+
 =item * all
 
 Ask about all configuration items, even if they currently have a value.

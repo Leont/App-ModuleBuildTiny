@@ -425,6 +425,17 @@ my %actions = (
 			}
 			write_json($config_file, $config);
 		}
+		elsif ($mode eq 'minimal') {
+			for my $item (@config_items) {
+				next if defined $config->{ $item->[0] };
+				if (defined $item->[3]) {
+					$config->{ $item->[0] } = $item->[3];
+				} else {
+					ask($config, $item);
+				}
+			}
+			write_json($config_file, $config);
+		}
 		elsif ($mode eq 'all') {
 			for my $item (@config_items) {
 				ask($config, $item, $config->{ $item->[0] });
