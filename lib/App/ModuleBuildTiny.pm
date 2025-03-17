@@ -169,9 +169,9 @@ my @config_items = (
 	[ 'email'        , 'What is the author\'s email?', 'open',  ],
 	[ 'license'      , 'What license do you want to use?', 'open', 'Perl_5' ],
 
-	[ 'write_build'  , 'Do you want to write your build files to your repository?', 'yn', !!1],
-	[ 'write_license', 'Do you want to write your LICENSE file to your repository?', 'yn', !!1],
-	[ 'write_readme' , 'Do you want to write your README file to your repository?', 'yn', !!1],
+	[ 'write_build'  , 'Do you want to write your build files to your filesystem?', 'yn', !!1],
+	[ 'write_license', 'Do you want to write your LICENSE file to your filesystem?', 'yn', !!1],
+	[ 'write_readme' , 'Do you want to write your README file to your filesystem?', 'yn', !!1],
 
 	[ 'auto_git'     , 'Do you want mbtiny to automatically handle git for you?', 'yn', !!1 ],
 	[ 'auto_bump'    , 'Do you want mbtiny to automatically bump on regenerate for you?', 'yn', !!1 ],
