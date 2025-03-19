@@ -251,7 +251,7 @@ Initialize a git repository on minting.
 
 =head2 setup <type>
 
-Create or update your configuration file (at F<~/.mbtiny/config>). Takes one optional positional argument that can take any of the following values:
+Create or update your global configuration file (at F<~/.mbtiny/config>). Takes one optional positional argument that can take any of the following values:
 
 =over 4
 
@@ -266,6 +266,34 @@ Like update, but only asks questions that do not have a default (The author's na
 =item * all
 
 Ask about all configuration items, even if they currently have a value.
+
+=item * list
+
+List your current configuration.
+
+=item * reset
+
+Remove the current configuration file.
+
+=back
+
+=head2 config <type>
+
+Update your distribution's configuration file. Takes one optional positional argument that can take any of the following values:
+
+=over 4
+
+=item * update
+
+Ask about all configuration items that are currently empty. This is the default.
+
+=item * all
+
+Ask about all configuration items, even if they currently have a value.
+
+=item * copy
+
+This copies the values from the global configuration into the distribution's configuration.
 
 =item * list
 
