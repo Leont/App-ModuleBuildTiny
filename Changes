@@ -1,5 +1,6 @@
 Revision history for App-ModuleBuildTiny
 
+0.048     2025-03-20 13:47:15+0100
           - Add support for dynamic prerequisites
           - Add setup minimal mode
           - Add get and set mode to setup and config
