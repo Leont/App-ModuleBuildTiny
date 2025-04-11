@@ -33,7 +33,7 @@ sub find {
 }
 
 sub mbt_version {
-	return -f 'dynamic-prereqs.yml' ? '0.048' : '0.039';
+	return -f 'dynamic-prereqs.yml' ? '0.048' : '0.044';
 }
 
 sub prereqs_for {
