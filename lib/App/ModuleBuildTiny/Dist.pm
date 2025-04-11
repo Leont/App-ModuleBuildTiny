@@ -278,7 +278,6 @@ sub new {
 		};
 
 		if (-e 'dynamic-prereqs.yml') {
-			$metahash->{prereqs}{configure}{requires}{'CPAN::Requirements::Dynamic'} //= '0.001';
 			my $dynamic_prereqs = load_jsonyaml('dynamic-prereqs.yml');
 			for my $expression (@{ $dynamic_prereqs->{expressions}}) {
 				$expression->{condition} = [ shellwords($expression->{condition}) ] unless ref $expression->{condition};
@@ -293,6 +292,10 @@ sub new {
 		if (%{$mergedata}) {
 			require CPAN::Meta::Merge;
 			$metahash = CPAN::Meta::Merge->new(default_version => '2')->merge($metahash, $mergedata);
+		}
+		if ($metahash->{x_dynamic_prereqs}) {
+			$metahash->{dynamic_config} = 1;
+			$metahash->{prereqs}{configure}{requires}{'CPAN::Requirements::Dynamic'} //= '0.002' if $mode eq 'MBT';
 		}
 
 		# this avoids a long-standing CPAN.pm bug that incorrectly merges runtime and
