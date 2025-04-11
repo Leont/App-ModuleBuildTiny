@@ -45,7 +45,7 @@ requires:
   File::chdir: '0'
   Getopt::Long: '2.36'
   Git::Wrapper: '0'
-  JSON::PP: '0'
+  JSON::MaybeXS: '0'
   Module::CPANfile: '0'
   Module::Metadata: '1.000037'
   Module::Runtime: '0'

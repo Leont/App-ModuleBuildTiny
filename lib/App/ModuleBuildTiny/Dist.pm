@@ -344,8 +344,11 @@ sub new {
 			"$header\nuse $minimum_perl;\nuse Dist::Build $minimum_db;\nBuild_PL(\\\@ARGV, \\\%ENV);\n";
 		}
 	};
-	$files{'META.json'} //= $meta->as_string;
-	$files{'META.yml'} //= $meta->as_string({ version => 1.4 });
+	{
+		local $ENV{CPAN_META_JSON_BACKEND} = JSON::MaybeXS::JSON();
+		$files{'META.json'} //= $meta->as_string;
+		$files{'META.yml'} //= $meta->as_string({ version => 1.4 });
+	}
 	$files{LICENSE} //= $license->fulltext;
 	$files{README} //= generate_readme($dist_name);
 	if ($opts{regenerate}{Changes}) {

@@ -2,6 +2,7 @@ Revision history for App-ModuleBuildTiny
 
           - Correctly set dynamic_config if dynamic requirements are detected
           - Add x_generated_by_perl to metadata
+          - Use JSON::MaybeXS
 
 0.049     2025-04-01 23:34:41+0200
           - Eliminate argument parsing warning in minting
