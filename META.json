@@ -94,7 +94,7 @@
       "repository" : {
          "type" : "git",
          "url" : "https://github.com/Leont/App-ModuleBuildTiny.git",
-         "web" : "https://github.com/Leont/App-ModuleBuildTiny/"
+         "web" : "https://github.com/Leont/App-ModuleBuildTiny"
       },
       "x_IRC" : "irc://irc.perl.org/#toolchain"
    },

@@ -379,13 +379,13 @@ sub generate_resources {
 		if ($origin =~ m{https://github.com/([\w.-]+)/([\w.-]+).git}) {
 			$result{repository} = {
 				type => 'git',
-				web  => "https://github.com/$1/$2/",
+				web  => "https://github.com/$1/$2",
 				url  => $origin,
 			};
 		} elsif ($origin =~ m{git\@github.com:([\w.-]+)/([\w.-]+).git}) {
 			$result{repository} = {
 				type => 'git',
-				web  => "https://github.com/$1/$2/",
+				web  => "https://github.com/$1/$2",
 				url  => "https://github.com/$1/$2.git",
 			};
 		} elsif ($origin =~ m{^https?://}) {
