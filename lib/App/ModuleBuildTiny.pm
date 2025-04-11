@@ -454,7 +454,7 @@ my %actions = (
 		}
 		elsif ($mode eq 'set') {
 			my ($key, $value) = @arguments;
-			my $item = grep { $_->[0] eq $key } @config_items;
+			my $item = grep { $_->[0] eq lc $key } @config_items;
 			die "No such known key $key" if not $item;
 			if ($item->[2] eq 'yn') {
 				$config->{$key} = $boolean{$value} // die "Unknown boolean value '$value'\n";
@@ -466,7 +466,7 @@ my %actions = (
 		elsif ($mode eq 'list') {
 			for my $item (@config_items) {
 				my ($key, $description, $type, $default) = @{$item};
-				say "\u$key: " . show_item($config, $key, $type);
+				say "$key: " . show_item($config, $key, $type);
 			}
 		}
 		elsif ($mode eq 'reset') {
@@ -512,7 +512,7 @@ my %actions = (
 		}
 		elsif ($mode eq 'set') {
 			my ($key, $value) = @arguments;
-			my $item = grep { $_->[0] eq $key } @config_items;
+			my $item = grep { $_->[0] eq lc $key } @config_items;
 			die "No such known key $key" if not $item;
 			$config->{$key} = $boolean{$value} // die "Unknown boolean value '$value'\n";
 			write_json($config_file, $config);
@@ -520,7 +520,7 @@ my %actions = (
 		elsif ($mode eq 'list') {
 			for my $item (@items) {
 				my ($key, $description, $type, $default) = @{$item};
-				say "\u$key: " . show_item($config, $key, $type);
+				say "$key: " . show_item($config, $key, $type);
 			}
 		}
 		elsif ($mode eq 'reset') {
