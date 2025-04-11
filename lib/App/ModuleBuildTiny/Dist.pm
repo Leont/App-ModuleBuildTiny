@@ -260,21 +260,22 @@ sub new {
 		my %resources = $class->generate_resources(%opts);
 
 		my $metahash = {
-			name           => $distname,
-			version        => $version->stringify,
-			author         => \@authors,
-			abstract       => $abstract,
-			dynamic_config => 0,
-			license        => [ $license->meta2_name ],
-			prereqs        => $prereqs,
-			release_status => $opts{trial} // $version =~ /_/ ? 'testing' : 'stable',
-			generated_by   => "App::ModuleBuildTiny version $VERSION",
-			'meta-spec'    => {
-				version    => '2',
-				url        => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec'
+			name                => $distname,
+			version             => $version->stringify,
+			author              => \@authors,
+			abstract            => $abstract,
+			dynamic_config      => 0,
+			license             => [ $license->meta2_name ],
+			prereqs             => $prereqs,
+			release_status      => $opts{trial} // $version =~ /_/ ? 'testing' : 'stable',
+			generated_by        => "App::ModuleBuildTiny version $VERSION",
+			'meta-spec'         => {
+				version         => 2,
+				url             => 'http://search.cpan.org/perldoc?CPAN::Meta::Spec'
 			},
-			(resources      => \%resources) x!! %resources,
-			x_spdx_expression => $license->spdx_expression,
+			(resources          => \%resources) x!! %resources,
+			x_spdx_expression   => $license->spdx_expression,
+			x_generated_by_perl => "$^V",
 		};
 
 		if (-e 'dynamic-prereqs.yml') {
