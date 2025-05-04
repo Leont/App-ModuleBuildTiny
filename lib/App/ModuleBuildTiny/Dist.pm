@@ -460,8 +460,8 @@ sub run {
 	local $CWD = $dir;
 	my $ret = !!1;
 	if ($opts{build}) {
-		system $Config{perlpath}, 'Build.PL' and die "Could not run Build.PL";
-		system $Config{perlpath}, 'Build' and die "Could not run Build";
+		system $Config{perlpath}, 'Build.PL' and ($opts{allow_failure} or die "Could not run Build.PL");
+		system $Config{perlpath}, 'Build' and ($opts{allow_failure} or die "Could not run Build");
 		my @extralib = map { rel2abs("blib/$_") } 'arch', 'lib';
 		local @PERL5LIB = (@extralib, @PERL5LIB);
 		local @PATH = (rel2abs(catdir('blib', 'script')), @PATH);

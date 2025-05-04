@@ -347,17 +347,17 @@ my %actions = (
 	run => sub {
 		my @arguments = @_;
 		die "No arguments given to run\n" if not @arguments;
-		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1)) or return 2;
+		GetOptionsFromArray(\@arguments, 'build!' => \(my $build = 1), 'allow_failure|allow-failure!' => \my $allow_failure) or return 2;
 		insert_options(\my %opts, get_config);
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
-		return $dist->run(commands => [ \@arguments ], build => $build, verbose => 1);
+		return $dist->run(commands => [ [ $SHELL ] ], build => $build, verbose => 0, allow_failure => $allow_failure);
 	},
 	shell => sub {
 		my @arguments = @_;
-		GetOptionsFromArray(\@arguments, 'build!' => \my $build) or return 2;
+		GetOptionsFromArray(\@arguments, 'build!' => \my $build, 'allow_failure|allow-failure!' => \my $allow_failure) or return 2;
 		insert_options(\my %opts, get_config);
 		my $dist = App::ModuleBuildTiny::Dist->new(%opts);
-		return $dist->run(commands => [ [ $SHELL ] ], build => $build, verbose => 0);
+		return $dist->run(commands => [ [ $SHELL ] ], build => $build, verbose => 0, allow_failure => $allow_failure);
 	},
 	listdeps => sub {
 		my @arguments = @_;
