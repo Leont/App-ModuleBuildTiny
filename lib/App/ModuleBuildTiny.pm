@@ -186,7 +186,7 @@ sub ask {
 	my $value = $prompt_for{$type}->($description, $local_default // $global_default);
 
 	if ($value ne '-') {
-		$config->{$key} = $type eq 'open' ? $value : $value ? $JSON::MaybeXS::true : $JSON::MaybeXS::false;
+		$config->{$key} = $type eq 'open' ? $value : $value ? JSON::MaybeXS::true : JSON::MaybeXS::false;
 	}
 	else {
 		delete $config->{$key};
